@@ -2,6 +2,7 @@ package com.appchat.controller;
 
 import com.appchat.dto.UsuarioDTO;
 import com.appchat.mapper.UsuarioMapper;
+import jakarta.ws.rs.QueryParam;
 import com.appchat.repository.UsuarioRepository;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -33,4 +34,16 @@ public class UsuarioController {
                 .map(UsuarioMapper::toDTO)
                 .collect(Collectors.toList());
     }
+
+    @GET
+    @Path("/buscar")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<UsuarioDTO> buscarUsuarios(@QueryParam("q") String q) {
+        return usuarioRepository.buscarPorNombreOEmail(q)
+                .stream()
+                .map(UsuarioMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+
 }

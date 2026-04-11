@@ -48,4 +48,20 @@ public class UsuarioRepository {
     public List<Usuario> findAll() {
         return usuarios;
     }
+
+    public List<Usuario> buscarPorNombreOEmail(String q) {
+        if (q == null || q.isBlank()) {
+            return new ArrayList<>();
+        }
+
+        String texto = q.toLowerCase();
+
+        return usuarios.stream()
+                .filter(usuario ->
+                        usuario.getNombre().toLowerCase().contains(texto) ||
+                                usuario.getApellido().toLowerCase().contains(texto) ||
+                                usuario.getEmail().toLowerCase().contains(texto)
+                )
+                .toList();
+    }
 }
