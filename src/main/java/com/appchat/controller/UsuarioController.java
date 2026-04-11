@@ -1,6 +1,7 @@
 package com.appchat.controller;
 
-import com.appchat.model.Usuario;
+import com.appchat.dto.UsuarioDTO;
+import com.appchat.mapper.UsuarioMapper;
 import com.appchat.repository.UsuarioRepository;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -9,6 +10,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("/usuarios")
 public class UsuarioController {
@@ -25,7 +27,10 @@ public class UsuarioController {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Usuario> listarUsuarios() {
-        return usuarioRepository.findAll();
+    public List<UsuarioDTO> listarUsuarios() {
+        return usuarioRepository.findAll()
+                .stream()
+                .map(UsuarioMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }
