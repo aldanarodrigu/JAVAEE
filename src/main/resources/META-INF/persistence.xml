@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.1"
+             xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                                 https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd">
+
+    <persistence-unit name="appchat-pu" transaction-type="JTA">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <!-- Entity classes -->
+        <class>com.appchat.model.Usuario</class>
+        <class>com.appchat.model.Mensaje</class>
+        <class>com.appchat.model.Chat</class>
+        <class>com.appchat.model.ChatDirecto</class>
+        <class>com.appchat.model.ChatGrupal</class>
+        <class>com.appchat.model.Grupo</class>
+
+        <properties>
+            <!-- PostgreSQL DataSource (replace with actual JNDI or server config) -->
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/appchat_db"/>
+            <property name="jakarta.persistence.jdbc.user" value="appchat_user"/>
+            <property name="jakarta.persistence.jdbc.password" value="appchat_password"/>
+
+            <!-- Hibernate settings -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>
