@@ -14,6 +14,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Consumes;
 import com.appchat.dto.ActualizarUsuarioDTO;
+import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,6 +86,22 @@ public class UsuarioController {
         }
 
         return UsuarioMapper.toDTO(usuarioActualizado);
+    }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response obtenerUsuarioPorId(@PathParam("id") Long id) {
+
+        var usuario = usuarioRepository.buscarPorId(id);
+
+        if (usuario == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Usuario no encontrado")
+                    .build();
+        }
+
+        return Response.ok(UsuarioMapper.toDTO(usuario)).build();
     }
 
 

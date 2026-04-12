@@ -49,6 +49,15 @@ public class UsuarioRepository {
         return usuarios;
     }
 
+    public Usuario buscarPorId(Long id) {
+        for (Usuario u : usuarios) {
+            if (u.getId().equals(id)) {
+                return u;
+            }
+        }
+        return null;
+    }
+
     public List<Usuario> buscarPorNombreOEmail(String q) {
         if (q == null || q.isBlank()) {
             return new ArrayList<>();
