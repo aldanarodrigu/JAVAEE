@@ -76,4 +76,14 @@ public class UsuarioRepository {
         }
         return null;
     }
+
+    public Usuario actualizarEstado(Long id, EstadoUsuario estado) {
+        for (Usuario u : usuarios) {
+            if (u.getId().equals(id)) {
+                u.setEstado(estado);
+                return u;
+            }
+        }
+        return null;
+    }
 }

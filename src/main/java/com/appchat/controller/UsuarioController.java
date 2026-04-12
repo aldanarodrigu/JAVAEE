@@ -2,6 +2,7 @@ package com.appchat.controller;
 
 import com.appchat.dto.UsuarioDTO;
 import com.appchat.mapper.UsuarioMapper;
+import com.appchat.dto.CambiarEstadoDTO;
 import jakarta.ws.rs.QueryParam;
 import com.appchat.repository.UsuarioRepository;
 import jakarta.inject.Inject;
@@ -65,6 +66,21 @@ public class UsuarioController {
         if (usuarioActualizado == null) {
             // TODO: devolver HTTP 404 (Not Found) en lugar de null
             // cuando el usuario no exista, usando Response o WebApplicationException
+            return null;
+        }
+
+        return UsuarioMapper.toDTO(usuarioActualizado);
+    }
+
+    @PUT
+    @Path("/{id}/estado")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public UsuarioDTO cambiarEstado(@PathParam("id") Long id, CambiarEstadoDTO datos) {
+        var usuarioActualizado = usuarioRepository.actualizarEstado(id, datos.getEstado());
+
+        if (usuarioActualizado == null) {
+            // TODO: devolver HTTP 404 cuando el usuario no exista
             return null;
         }
 
