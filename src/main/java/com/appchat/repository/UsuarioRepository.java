@@ -64,4 +64,16 @@ public class UsuarioRepository {
                 )
                 .toList();
     }
+
+    public Usuario actualizarUsuario(Long id, String nombre, String apellido, String fotoPerfil) {
+        for (Usuario u : usuarios) {
+            if (u.getId().equals(id)) {
+                if (nombre != null) u.setNombre(nombre);
+                if (apellido != null) u.setApellido(apellido);
+                if (fotoPerfil != null) u.setFotoPerfil(fotoPerfil);
+                return u;
+            }
+        }
+        return null;
+    }
 }
