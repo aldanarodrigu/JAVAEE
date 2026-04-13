@@ -1,7 +1,5 @@
 package com.appchat.model;
 
-import com.appchat.model.enums.EstadoUsuario;
-import com.appchat.model.enums.RolSistema;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,78 +10,96 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String nombre;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String apellido;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 150)
     private String email;
 
-    @Column(nullable = false)
-    private String password;
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
+
+    @Column(name = "foto_perfil", length = 500)
+    private String fotoPerfil;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private EstadoUsuario estado = EstadoUsuario.DESCONECTADO;
 
     @Column(nullable = false)
-    private EstadoUsuario estado;
-    
-    @Column(nullable = false)
-    private RolSistema rolSistema;
+    private Boolean activo = true;
 
-    public Long getId(){ 
-        return id; 
-    }
-    
-    public void setId(Long id){ 
-        this.id = id; 
-    }
-    
-    public String getNombre(){ 
-     return nombre; 
-    }
-    
-    public void setNombre(String nombre){ 
-        this.nombre = nombre; 
-    }
-    
-    public String getApellido(){ 
-        return apellido; 
-    }
-    
-    public void setApellido(String apellido){ 
-        this.apellido = apellido; 
-    }
-    
-    public String getEmail(){ 
-        return email; 
-    }
-    
-    public void setEmail(String email){ 
-        this.email = email; 
-    }
-    
-    public String getPassword(){ 
-        return password; 
-    }
-    
-    public void setPassword(String password){ 
-        this.password = password; 
-    }
-    
-    public EstadoUsuario getEstado(){ 
-        return estado; 
-    }
-    
-    public void setEstado(EstadoUsuario estado){ 
-        this.estado = estado; 
+    public Usuario() {
     }
 
-    public RolSistema getRolSistema() {
-        return rolSistema;
+    // getters y setters ↓↓↓
+
+    public Long getId() {
+        return id;
     }
 
-    public void setRolSistema(RolSistema rolSistema) {
-        this.rolSistema = rolSistema;
+    public String getNombre() {
+        return nombre;
     }
-    
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
+    }
+
+    public EstadoUsuario getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoUsuario estado) {
+        this.estado = estado;
+    }
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+    // SOLO para uso en pruebas (repositorio en memoria).
+    // Cuando se use base de datos con JPA, el ID se genera automáticamente
+    // y este metodo no debe utilizarse.
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

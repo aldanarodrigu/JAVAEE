@@ -1,70 +1,98 @@
 package com.appchat.repository;
 
 import com.appchat.model.Usuario;
+import com.appchat.model.EstadoUsuario;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.PersistenceContext;
+
+import java.util.ArrayList;
 import java.util.List;
 
-@ApplicationScoped 
+@ApplicationScoped
 public class UsuarioRepository {
 
-    @PersistenceContext(unitName = "appchatPU") //como que inyecta al entitymanager 
-    private EntityManager em;
+    private final List<Usuario> usuarios = new ArrayList<>();
 
-    public void guardar(Usuario usuario) {
-        em.persist(usuario);
+    @PostConstruct
+    public void init() {
+
+        Usuario u1 = new Usuario();
+        u1.setId(1L);
+        u1.setNombre("José");
+        u1.setApellido("Artigas");
+        u1.setEmail("artigas@uruguay.uy");
+        u1.setPasswordHash("1234");
+        u1.setEstado(EstadoUsuario.EN_LINEA);
+
+        Usuario u2 = new Usuario();
+        u2.setId(2L);
+        u2.setNombre("Fructuoso");
+        u2.setApellido("Rivera");
+        u2.setEmail("rivera@uruguay.uy");
+        u2.setPasswordHash("1234");
+        u2.setEstado(EstadoUsuario.OCUPADO);
+
+        Usuario u3 = new Usuario();
+        u3.setId(3L);
+        u3.setNombre("Manuel");
+        u3.setApellido("Oribe");
+        u3.setEmail("oribe@uruguay.uy");
+        u3.setPasswordHash("1234");
+        u3.setEstado(EstadoUsuario.AUSENTE);
+
+        usuarios.add(u1);
+        usuarios.add(u2);
+        usuarios.add(u3);
     }
 
-    public Usuario buscarPorEmail(String email){
-        try {
-            return em.createQuery(
-                "SELECT u FROM Usuario u WHERE u.email = :email", Usuario.class)
-                .setParameter("email", email) //le asigna email a email para evitar inyeccion
-                .getSingleResult(); //espera un solo resultado
-        } catch (NoResultException e) {
-            return null;
+    public List<Usuario> findAll() {
+        return usuarios;
+    }
+
+    public Usuario buscarPorId(Long id) {
+        for (Usuario u : usuarios) {
+            if (u.getId().equals(id)) {
+                return u;
+            }
         }
+        return null;
     }
-    
-    public void eliminar(Long id){
-        Usuario usuario = em.find(Usuario.class, id);
-        if(usuario != null){
-            em.remove(usuario);
+
+    public List<Usuario> buscarPorNombreOEmail(String q) {
+        if (q == null || q.isBlank()) {
+            return new ArrayList<>();
         }
+
+        String texto = q.toLowerCase();
+
+        return usuarios.stream()
+                .filter(usuario ->
+                        usuario.getNombre().toLowerCase().contains(texto) ||
+                                usuario.getApellido().toLowerCase().contains(texto) ||
+                                usuario.getEmail().toLowerCase().contains(texto)
+                )
+                .toList();
     }
-    
-    public Usuario actualizar(Usuario usuario){
-        return em.merge(usuario);
-    }
-    
-    public boolean existeUsuario(Long id){
-        return em.find(Usuario.class, id) != null;
-    }
-    
-    public List<Usuario> listarUsuarios(){
-        return em.createQuery("SELECT u FROM Usuarios u", Usuario.class).getResultList();
-    }
-    
-    public List<Usuario> buscarPorNombres(String nombre){
-        return em.createQuery("SELECT u FROM Usuarios WHERE u.nombre LIKE :nombre", Usuario.class).setParameter("nombre", "%" + nombre + "%").getResultList();
-    }
-    
-    public Usuario buscarPorId(Long id){
-        return em.find(Usuario.class, id);
-    }
-    
-    public boolean existePorEmail(String email){
-        try {
-            em.createQuery(
-                "SELECT 1 FROM Usuario u WHERE u.email = :email")
-                .setParameter("email", email)
-                .getSingleResult();
-            return true;
-        } catch (NoResultException e) {
-            return false;
+
+    public Usuario actualizarUsuario(Long id, String nombre, String apellido, String fotoPerfil) {
+        for (Usuario u : usuarios) {
+            if (u.getId().equals(id)) {
+                if (nombre != null) u.setNombre(nombre);
+                if (apellido != null) u.setApellido(apellido);
+                if (fotoPerfil != null) u.setFotoPerfil(fotoPerfil);
+                return u;
+            }
         }
+        return null;
     }
-    
+
+    public Usuario actualizarEstado(Long id, EstadoUsuario estado) {
+        for (Usuario u : usuarios) {
+            if (u.getId().equals(id)) {
+                u.setEstado(estado);
+                return u;
+            }
+        }
+        return null;
+    }
 }
