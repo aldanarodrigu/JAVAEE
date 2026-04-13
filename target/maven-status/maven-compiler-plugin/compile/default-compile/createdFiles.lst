@@ -1,0 +1,6 @@
+com/appchat/controller/UsuarioController.class
+com/appchat/AppConfig.class
+com/appchat/model/Usuario.class
+com/appchat/service/UsuarioService.class
+com/appchat/repository/UsuarioRepository.class
+com/appchat/dto/UsuarioDTO.class
