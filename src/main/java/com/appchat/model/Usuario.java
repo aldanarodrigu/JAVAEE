@@ -1,5 +1,7 @@
 package com.appchat.model;
 
+import com.appchat.model.enums.EstadoUsuario;
+import com.appchat.model.enums.RolSistema;
 import jakarta.persistence.*;
 
 @Entity
@@ -22,8 +24,11 @@ public class Usuario {
     @Column(nullable = false)
     private String password;
 
-    @Column
-    private String estado = "DESCONECTADO";
+    @Column(nullable = false)
+    private EstadoUsuario estado;
+    
+    @Column(nullable = false)
+    private RolSistema rolSistema;
 
     public Long getId(){ 
         return id; 
@@ -65,11 +70,20 @@ public class Usuario {
         this.password = password; 
     }
     
-    public String getEstado(){ 
+    public EstadoUsuario getEstado(){ 
         return estado; 
     }
     
-    public void setEstado(String estado){ 
+    public void setEstado(EstadoUsuario estado){ 
         this.estado = estado; 
     }
+
+    public RolSistema getRolSistema() {
+        return rolSistema;
+    }
+
+    public void setRolSistema(RolSistema rolSistema) {
+        this.rolSistema = rolSistema;
+    }
+    
 }

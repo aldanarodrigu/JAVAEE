@@ -2,6 +2,8 @@ package com.appchat.service;
 
 import com.appchat.dto.UsuarioDTO;
 import com.appchat.model.Usuario;
+import com.appchat.model.enums.EstadoUsuario;
+import com.appchat.model.enums.RolSistema;
 import com.appchat.repository.UsuarioRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -26,6 +28,8 @@ public class UsuarioService{
         usuario.setEmail(usuarioDto.getEmail());
         // TODO: hashear la password antes de guardar
         usuario.setPassword(usuarioDto.getPassword());
+        usuario.setEstado(EstadoUsuario.INVISIBLE);
+        usuario.setRolSistema(RolSistema.EMPLEADO);
         
         repository.guardar(usuario); // LLAMAS AL REPOSITORIO DE USUARIO, ACA NO PODES DIRECTAMENTE CON LA BD!!
         
