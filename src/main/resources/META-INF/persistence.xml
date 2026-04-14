@@ -4,6 +4,9 @@
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <jta-data-source>jdbc/appchatDS</jta-data-source>
     <class>com.appchat.model.Usuario</class>
+    <class>com.appchat.model.Chat</class>
+    <class>com.appchat.model.ChatDirecto</class>
+    <class>com.appchat.model.Mensaje</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
