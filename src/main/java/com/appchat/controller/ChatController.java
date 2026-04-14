@@ -60,6 +60,7 @@ public class ChatController {
         ChatResumenDTO chat = service.crearOAbrirChatDirecto(usuarioId, request.getUsuarioDestinoId());
         return Response.ok(chat).build();
     }
+    
 
     private Usuario obtenerUsuarioAutenticado() {
         Principal principal = securityContext != null ? securityContext.getUserPrincipal() : null;
