@@ -25,9 +25,11 @@ public class Usuario {
     private String password;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.ORDINAL)
     private EstadoUsuario estado;
     
     @Column(nullable = false)
+    @Enumerated(EnumType.ORDINAL)
     private RolSistema rolSistema;
 
     public Long getId(){ 

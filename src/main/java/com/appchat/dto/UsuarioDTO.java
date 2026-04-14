@@ -1,11 +1,14 @@
 package com.appchat.dto;
 
+import com.appchat.model.enums.EstadoUsuario;
+
 public class UsuarioDTO{
 
     private String nombre;
     private String apellido;
     private String email;
     private String password;
+    private EstadoUsuario estado;
 
     public String getNombre(){ 
         return nombre; 
