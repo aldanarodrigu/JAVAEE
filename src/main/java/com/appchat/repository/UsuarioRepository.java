@@ -44,11 +44,13 @@ public class UsuarioRepository {
     }
     
     public List<Usuario> listarUsuarios(){
-        return em.createQuery("SELECT u FROM Usuarios u", Usuario.class).getResultList();
+        return em.createQuery("SELECT u FROM Usuario u", Usuario.class).getResultList();
     }
     
     public List<Usuario> buscarPorNombres(String nombre){
-        return em.createQuery("SELECT u FROM Usuarios WHERE u.nombre LIKE :nombre", Usuario.class).setParameter("nombre", "%" + nombre + "%").getResultList();
+        return em.createQuery("SELECT u FROM Usuario u WHERE u.nombre LIKE :nombre", Usuario.class)
+                .setParameter("nombre", "%" + nombre + "%")
+                .getResultList();
     }
     
     public Usuario buscarPorId(Long id){
