@@ -1,4 +1,4 @@
-package com.appchat.controller;
+package com.appchat.websocket;
 
 import com.appchat.dto.MensajeDTO;
 import com.appchat.service.ChatService;
