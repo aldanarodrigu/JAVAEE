@@ -17,6 +17,15 @@
     </properties>
 
     <dependencies>
+        
+        <!-- WebSocket -->
+        <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+            <version>1.1</version>
+            <scope>provided</scope>
+        </dependency>
+        
         <!-- Jakarta EE 10 -->
         <dependency>
             <groupId>jakarta.platform</groupId>

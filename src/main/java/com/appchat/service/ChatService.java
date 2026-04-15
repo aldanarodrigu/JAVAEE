@@ -3,9 +3,11 @@ package com.appchat.service;
 import com.appchat.dto.ChatResumenDTO;
 import com.appchat.dto.HistorialMensajesDTO;
 import com.appchat.dto.MensajeDTO;
+import com.appchat.model.Chat;
 import com.appchat.model.ChatDirecto;
 import com.appchat.model.Mensaje;
 import com.appchat.model.Usuario;
+import com.appchat.model.enums.TipoMensaje;
 import com.appchat.repository.ChatRepository;
 import com.appchat.repository.UsuarioRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -26,6 +28,27 @@ public class ChatService {
     private UsuarioRepository usuarioRepository;
 
     @Transactional
+    public MensajeDTO enviarMensaje(Long chatId, Long emisorId, String contenido){
+        Chat chat = chatRepository.buscarChatDirectoPorId(chatId);
+        if(chat == null){
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        Usuario emisor = usuarioRepository.buscarPorId(emisorId);
+        
+        Mensaje mensaje = new Mensaje();
+        mensaje.setContenido(contenido);
+        mensaje.setEmisor(emisor);
+        mensaje.setChat(chat);
+        mensaje.setTipo(TipoMensaje.TEXTO);
+        
+        chatRepository.guardarMensaje(mensaje);
+        
+        return mapearMensaje(mensaje);
+        
+    }
+    
+    @Transactional
     public List<ChatResumenDTO> listarChatsDelUsuario(Long usuarioId) {
         verificarUsuarioExiste(usuarioId);
 
@@ -38,7 +61,7 @@ public class ChatService {
 
         return respuestas;
     }
-
+    
     @Transactional
     public HistorialMensajesDTO obtenerHistorialMensajes(Long chatId, Long usuarioId, int page, int size) {
         ChatDirecto chat = chatRepository.buscarChatDirectoPorId(chatId);
@@ -163,4 +186,24 @@ public class ChatService {
 
         return respuestas;
     }
+    
+    private MensajeDTO mapearMensaje(Mensaje mensaje) {
+    
+        MensajeDTO dto = new MensajeDTO(); // crea el objeto "limpio"
+
+        dto.setId(mensaje.getId());                        // el id del mensaje
+        dto.setContenido(mensaje.getContenido());          // el texto
+        dto.setFechaEnvio(mensaje.getFechaEnvio());        // cuándo se envió
+        dto.setTipo(mensaje.getTipo());                    // TEXTO, IMAGEN, etc
+        dto.setEstado(mensaje.getEstado());                // ENVIADO, LEIDO, etc
+
+        // Del emisor solo expone lo necesario, no el objeto entero
+        dto.setEmisorId(mensaje.getEmisor().getId());
+        dto.setEmisorNombre(mensaje.getEmisor().getNombre());
+        dto.setEmisorApellido(mensaje.getEmisor().getApellido());
+        // ← NO expone email, password, etc
+
+        return dto;
+    }
+    
 }
