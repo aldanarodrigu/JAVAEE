@@ -12,6 +12,8 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 @ApplicationScoped // bean manejado por CDI, basicamente dice que esta clase solo se va a instancias una sola vez
 public class UsuarioService{
 
@@ -30,7 +32,9 @@ public class UsuarioService{
         usuario.setApellido(usuarioDto.getApellido());
         usuario.setEmail(usuarioDto.getEmail());
         // TODO: hashear la password antes de guardar
-        usuario.setPassword(usuarioDto.getPassword());
+        //usuario.setPassword(usuarioDto.getPassword());
+        String hashed = BCrypt.hashpw(usuarioDto.getPassword(), BCrypt.gensalt());
+        usuario.setPassword(hashed);
         usuario.setEstado(EstadoUsuario.INVISIBLE);
         usuario.setRolSistema(RolSistema.EMPLEADO);
         
