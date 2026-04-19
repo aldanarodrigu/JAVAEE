@@ -29,7 +29,7 @@ public class Usuario {
     private EstadoUsuario estado;
     
     @Column(nullable = false)
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private RolSistema rolSistema;
 
     public Long getId(){ 

@@ -5,7 +5,6 @@ import com.appchat.dto.UsuarioDTO;
 import com.appchat.model.Usuario;
 import com.appchat.security.JwtUtil;
 import com.appchat.service.AuthService;
-import com.appchat.service.UsuarioService;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -30,7 +29,7 @@ public class AuthController {
         try {
             Usuario u = authService.login(dto.getEmail(), dto.getPassword());
 
-            String token = JwtUtil.generarToken(u.getEmail());
+            String token = JwtUtil.generarToken(u.getEmail(), u.getRolSistema().name());
 
             return Response.ok("{\"token\": \"" + token + "\"}").build();
 

@@ -42,8 +42,18 @@ public class JwtFilter implements ContainerRequestFilter {
                     .getBody();
 
             String email = claims.getSubject();
+            String rol = claims.get("rol", String.class);
 
             requestContext.setProperty("email", email);
+            requestContext.setProperty("rol", rol);
+            
+            if (path.startsWith("auth/registro")) {
+                if (!"SUPER_ADMIN".equals(rol)) {
+                    requestContext.abortWith(Response.status(403)
+                            .entity("{\"error\": \"No autorizado\"}")
+                            .build());
+                }
+            }
 
         } catch (Exception e) {
             requestContext.abortWith(Response.status(401)

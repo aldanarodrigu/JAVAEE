@@ -17,9 +17,10 @@ public class JwtUtil {
         return KEY;
     }
 
-    public static String generarToken(String email) {
+    public static String generarToken(String email, String rol) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("rol", rol)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 día
                 .signWith(KEY)
