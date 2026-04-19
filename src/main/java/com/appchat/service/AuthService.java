@@ -1,7 +1,10 @@
 package com.appchat.service;
 
 import com.appchat.model.Usuario;
+import com.appchat.dto.UsuarioDTO;
 import com.appchat.repository.UsuarioRepository;
+import com.appchat.model.enums.RolSistema;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -12,6 +15,9 @@ public class AuthService {
 
     @Inject
     private UsuarioRepository repository;
+    
+    @Inject
+    private UsuarioService usuarioService;
 
     public Usuario login(String email, String password) {
 
@@ -26,5 +32,20 @@ public class AuthService {
         }
 
         return u;
+    }
+    
+    public Usuario registrarUsuario(String email, UsuarioDTO dto) {
+
+        Usuario solicitante = repository.buscarPorEmail(email);
+
+        if (solicitante == null) {
+            throw new SecurityException("Usuario no válido");
+        }
+
+        if (solicitante.getRolSistema() != RolSistema.SUPER_ADMIN) {
+            throw new SecurityException("No autorizado");
+        }
+
+        return usuarioService.crearUsuario(dto);
     }
 }
