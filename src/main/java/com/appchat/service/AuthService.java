@@ -36,7 +36,6 @@ public class AuthService {
     
     public Usuario registrarUsuario(String email, UsuarioDTO dto) {
 
-        System.out.println("Buscando usuario con email: " + email);
         Usuario solicitante = repository.buscarPorEmail(email);
 
         if (solicitante == null) {

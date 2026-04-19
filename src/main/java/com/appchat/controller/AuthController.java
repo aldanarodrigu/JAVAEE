@@ -53,8 +53,6 @@ public class AuthController {
 
         Usuario nuevo = authService.registrarUsuario(email, dto);
         
-        System.out.println("EMAIL: " + email);
-        
         return Response.status(201)
                 .entity("{\"id\": " + nuevo.getId() + "}")
                 .build();
