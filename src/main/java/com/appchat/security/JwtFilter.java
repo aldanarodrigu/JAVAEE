@@ -7,6 +7,7 @@ import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.ext.Provider;
 import jakarta.ws.rs.core.Response;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 
 @Provider
@@ -18,7 +19,6 @@ public class JwtFilter implements ContainerRequestFilter {
 
         String path = requestContext.getUriInfo().getPath();
 
-        // permitir login sin token
         if (path.contains("auth/login")) {
             return;
         }
@@ -35,11 +35,15 @@ public class JwtFilter implements ContainerRequestFilter {
         String token = authHeader.substring("Bearer ".length());
 
         try {
-            // VALIDAR TOKEN
-            Jwts.parserBuilder()
-                .setSigningKey(JwtUtil.getKey()) // obtener la key
-                .build()
-                .parseClaimsJws(token);
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(JwtUtil.getKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String email = claims.getSubject();
+
+            requestContext.setProperty("email", email);
 
         } catch (Exception e) {
             requestContext.abortWith(Response.status(401)

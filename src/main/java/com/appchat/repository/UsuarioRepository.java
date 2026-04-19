@@ -1,11 +1,6 @@
 package com.appchat.repository;
 
 import com.appchat.model.Usuario;
-import com.appchat.dto.UsuarioDTO;
-import com.appchat.model.enums.EstadoUsuario;
-import com.appchat.model.enums.RolSistema;
-
-import org.mindrot.jbcrypt.BCrypt;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -74,23 +69,4 @@ public class UsuarioRepository {
             return false;
         }
     }
-    
-    public Usuario crearDesdeDTO(UsuarioDTO dto) {
-
-    Usuario u = new Usuario();
-    u.setNombre(dto.getNombre());
-    u.setApellido(dto.getApellido());
-    u.setEmail(dto.getEmail());
-
-    String hashed = BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt());
-    u.setPassword(hashed);
-
-    u.setRolSistema(RolSistema.EMPLEADO);
-    u.setEstado(EstadoUsuario.INVISIBLE);
-
-    guardar(u);
-
-    return u;
-    }
-    
 }
