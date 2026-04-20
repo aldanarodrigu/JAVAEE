@@ -68,19 +68,31 @@ public class ChatService {
 
         MensajeDTO dto = mapearMensaje(mensaje);
 
-        notificarChat(chat, dto);
+        notificarChat(chat, mensaje, dto);
         
         return dto;
     }
     
-    private void notificarChat(Chat chat, MensajeDTO mensaje) {
+    private void notificarChat(Chat chat, Mensaje mensaje, MensajeDTO dtoMensaje) {
 
-        List<Long> destinatarios = obtenerUsuariosDelChat(chat, mensaje.getEmisorId());
+        List<Long> destinatarios = obtenerUsuariosDelChat(chat, dtoMensaje.getEmisorId());
+        boolean entregado = false;
 
-        String json = JsonUtil.toJson(mensaje);
+        String json = JsonUtil.toJson(dtoMensaje);
 
         for (Long userId : destinatarios) {
-            chatHub.enviarAUsuario(userId, json);
+            if (!chatHub.obtenerSesiones(userId).isEmpty()) {
+                chatHub.enviarAUsuario(userId, json);
+                entregado = true;
+            }
+        }
+
+        if (entregado && mensaje.getEstado() == EstadoMensaje.ENVIADO) {
+            mensaje.setEstado(EstadoMensaje.ENTREGADO);
+            chatRepository.flush();
+
+            MensajeDTO dtoEntregado = mapearMensaje(mensaje);
+            chatHub.enviarAUsuario(mensaje.getEmisor().getId(), JsonUtil.toJson(dtoEntregado));
         }
     }
     
@@ -250,7 +262,20 @@ public class ChatService {
 
         MensajeWSDTO dto = JsonUtil.fromJson(message, MensajeWSDTO.class);
 
-        if (dto == null || dto.getChatId() == null || dto.getContenido() == null) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Mensaje inválido");
+        }
+
+        if (esAcuseLectura(dto)) {
+            if (dto.getMensajeId() == null) {
+                throw new IllegalArgumentException("Mensaje inválido");
+            }
+
+            marcarMensajeLeidoDesdeWebSocket(userId, dto.getMensajeId(), dto.getChatId());
+            return;
+        }
+
+        if (dto.getChatId() == null || dto.getContenido() == null) {
             throw new IllegalArgumentException("Mensaje inválido");
         }
 
@@ -259,6 +284,39 @@ public class ChatService {
             userId,
             dto.getContenido()
         );
+    }
+
+    @Transactional
+    public MensajeDTO marcarMensajeLeidoDesdeWebSocket(Long usuarioId, Long mensajeId, Long chatId) {
+        Mensaje mensaje = chatRepository.buscarMensajePorId(mensajeId);
+
+        if (mensaje == null) {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+
+        if (chatId != null && !mensaje.getChat().getId().equals(chatId)) {
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+
+        validarParticipacion(mensaje.getChat(), usuarioId);
+
+        if (mensaje.getEmisor().getId().equals(usuarioId)) {
+            return mapearMensaje(mensaje);
+        }
+
+        if (mensaje.getEstado() != EstadoMensaje.LEIDO) {
+            mensaje.setEstado(EstadoMensaje.LEIDO);
+            chatRepository.flush();
+        }
+
+        MensajeDTO dto = mapearMensaje(mensaje);
+        chatHub.enviarAUsuario(mensaje.getEmisor().getId(), JsonUtil.toJson(dto));
+
+        return dto;
+    }
+
+    private boolean esAcuseLectura(MensajeWSDTO dto) {
+        return dto.getAccion() != null && "LEIDO".equalsIgnoreCase(dto.getAccion());
     }
     
 }

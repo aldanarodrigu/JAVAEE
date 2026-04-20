@@ -72,6 +72,10 @@ public class ChatRepository {
         em.persist(mensaje);
     }
 
+    public Mensaje buscarMensajePorId(Long mensajeId) {
+        return em.find(Mensaje.class, mensajeId);
+    }
+
     public Mensaje buscarUltimoMensaje(Long chatId) {
         try {
             return em.createQuery(
