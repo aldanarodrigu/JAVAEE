@@ -105,6 +105,36 @@ public class ChatRepository {
                 .getResultList();
     }
 
+    public List<Mensaje> buscarMensajesEnviadosPendientesEntregaParaUsuarioEnChat(Long chatId, Long usuarioId) {
+        return em.createQuery(
+                "SELECT m FROM Mensaje m "
+                + "JOIN FETCH m.emisor "
+                + "WHERE m.chat.id = :chatId "
+                + "AND m.emisor.id <> :usuarioId "
+                + "AND m.estado = :estadoEnviado "
+                + "ORDER BY m.fechaEnvio ASC",
+                Mensaje.class)
+                .setParameter("chatId", chatId)
+                .setParameter("usuarioId", usuarioId)
+                .setParameter("estadoEnviado", com.appchat.model.enums.EstadoMensaje.ENVIADO)
+                .getResultList();
+    }
+
+    public List<Mensaje> buscarMensajesPendientesLecturaParaUsuarioEnChat(Long chatId, Long usuarioId) {
+        return em.createQuery(
+                "SELECT m FROM Mensaje m "
+                + "JOIN FETCH m.emisor "
+                + "WHERE m.chat.id = :chatId "
+                + "AND m.emisor.id <> :usuarioId "
+                + "AND m.estado <> :estadoLeido "
+                + "ORDER BY m.fechaEnvio ASC",
+                Mensaje.class)
+                .setParameter("chatId", chatId)
+                .setParameter("usuarioId", usuarioId)
+                .setParameter("estadoLeido", com.appchat.model.enums.EstadoMensaje.LEIDO)
+                .getResultList();
+    }
+
     public long contarMensajes(Long chatId) {
         return em.createQuery(
                 "SELECT COUNT(m) FROM Mensaje m WHERE m.chat.id = :chatId",
