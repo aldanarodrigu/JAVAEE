@@ -70,4 +70,9 @@ public class UsuarioService{
         dto.setRolSistema(usuario.getRolSistema());
         return dto;
     }
+    
+    public Usuario obtenerPorEmail(String email) {
+        return repository.buscarPorEmail(email);
+    }
+    
 }

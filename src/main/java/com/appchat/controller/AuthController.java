@@ -29,7 +29,7 @@ public class AuthController {
         try {
             Usuario u = authService.login(dto.getEmail(), dto.getPassword());
 
-            String token = JwtUtil.generarToken(u.getEmail(), u.getRolSistema().name());
+            String token = JwtUtil.generarToken(u.getId(), u.getEmail(), u.getRolSistema().name());
 
             return Response.ok("{\"token\": \"" + token + "\"}").build();
 
