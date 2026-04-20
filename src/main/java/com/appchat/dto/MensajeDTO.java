@@ -2,12 +2,13 @@ package com.appchat.dto;
 
 import com.appchat.model.enums.EstadoMensaje;
 import com.appchat.model.enums.TipoMensaje;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class MensajeDTO {
 
     private Long id;
-    private Date fechaEnvio;
+    private LocalDateTime fechaEnvio;
     private TipoMensaje tipo;
     private EstadoMensaje estado;
     private String contenido;
@@ -23,11 +24,11 @@ public class MensajeDTO {
         this.id = id;
     }
 
-    public Date getFechaEnvio() {
+    public LocalDateTime getFechaEnvio() {
         return fechaEnvio;
     }
 
-    public void setFechaEnvio(Date fechaEnvio) {
+    public void setFechaEnvio(LocalDateTime fechaEnvio) {
         this.fechaEnvio = fechaEnvio;
     }
 

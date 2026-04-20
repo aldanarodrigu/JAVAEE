@@ -6,16 +6,23 @@ import io.jsonwebtoken.security.Keys;
 
 import java.security.Key;
 import java.util.Date;
-import static javax.crypto.Cipher.SECRET_KEY;
 
 public class JwtUtil {
 
     private static final Key KEY = Keys.hmacShaKeyFor(
-        "claveSuperSecreta12345678901234567890".getBytes()
+            "claveSuperSecreta12345678901234567890".getBytes()
     );
-    
+
     public static Key getKey() {
         return KEY;
+    }
+
+    private static Claims parse(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public static String generarToken(Long userId, String email, String rol) {
@@ -24,17 +31,14 @@ public class JwtUtil {
                 .claim("userId", userId)
                 .claim("rol", rol)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 día
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(KEY)
                 .compact();
     }
-    
+
     public static boolean esTokenValido(String token) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(KEY)
-                .build()
-                .parseClaimsJws(token);
+            parse(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -42,28 +46,10 @@ public class JwtUtil {
     }
 
     public static String obtenerEmail(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(KEY)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return parse(token).getSubject();
     }
-    
-    
+
     public static Long getUserIdFromToken(String token) {
-        try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(KEY)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            return claims.get("userId", Long.class); 
-
-        } catch (Exception e) {
-            throw new RuntimeException("Token inválido", e);
-        }
+        return parse(token).get("userId", Long.class);
     }
-    
 }

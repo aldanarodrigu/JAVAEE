@@ -1,15 +1,18 @@
 package com.appchat.dto;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class ChatResumenDTO {
 
     private Long id;
-    private Date fechaCreacion;
-    private Long usuarioInterlocutorId;
-    private String usuarioInterlocutorNombre;
+    private String tipo;
+    private String nombre;
+    private String fotoUrl;
+    private LocalDateTime fechaCreacion;
     private String ultimoMensajeContenido;
-    private Date ultimoMensajeFecha;
+    private LocalDateTime ultimoMensajeFecha;
+    
+    private Long usuarioInterlocutorId; // solo para DIRECTO
 
     public Long getId() {
         return id;
@@ -19,28 +22,36 @@ public class ChatResumenDTO {
         this.id = id;
     }
 
-    public Date getFechaCreacion() {
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getFotoUrl() {
+        return fotoUrl;
+    }
+
+    public void setFotoUrl(String fotoUrl) {
+        this.fotoUrl = fotoUrl;
+    }
+
+    public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
 
-    public void setFechaCreacion(Date fechaCreacion) {
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
-    }
-
-    public Long getUsuarioInterlocutorId() {
-        return usuarioInterlocutorId;
-    }
-
-    public void setUsuarioInterlocutorId(Long usuarioInterlocutorId) {
-        this.usuarioInterlocutorId = usuarioInterlocutorId;
-    }
-
-    public String getUsuarioInterlocutorNombre() {
-        return usuarioInterlocutorNombre;
-    }
-
-    public void setUsuarioInterlocutorNombre(String usuarioInterlocutorNombre) {
-        this.usuarioInterlocutorNombre = usuarioInterlocutorNombre;
     }
 
     public String getUltimoMensajeContenido() {
@@ -51,11 +62,21 @@ public class ChatResumenDTO {
         this.ultimoMensajeContenido = ultimoMensajeContenido;
     }
 
-    public Date getUltimoMensajeFecha() {
+    public LocalDateTime getUltimoMensajeFecha() {
         return ultimoMensajeFecha;
     }
 
-    public void setUltimoMensajeFecha(Date ultimoMensajeFecha) {
+    public void setUltimoMensajeFecha(LocalDateTime ultimoMensajeFecha) {
         this.ultimoMensajeFecha = ultimoMensajeFecha;
     }
+
+    public Long getUsuarioInterlocutorId() {
+        return usuarioInterlocutorId;
+    }
+
+    public void setUsuarioInterlocutorId(Long usuarioInterlocutorId) {
+        this.usuarioInterlocutorId = usuarioInterlocutorId;
+    }
+
+    
 }

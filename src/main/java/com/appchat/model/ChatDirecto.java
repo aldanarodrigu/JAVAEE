@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.util.List;
 
 @Entity
 @DiscriminatorValue("DIRECTO")
@@ -32,5 +33,10 @@ public class ChatDirecto extends Chat {
 
     public void setUsuarioDos(Usuario usuarioDos) {
         this.usuarioDos = usuarioDos;
+    }
+
+    @Override
+    public List<Usuario> getParticipantes() {
+        return List.of(usuarioUno, usuarioDos);
     }
 }

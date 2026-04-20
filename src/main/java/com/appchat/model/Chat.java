@@ -13,6 +13,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,16 +29,22 @@ public abstract class Chat {
     private Long id;
 
     @Column(nullable = false, updatable = false)
-    private Date fechaCreacion;
+    private LocalDateTime fechaCreacion;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("fechaEnvio ASC")
     private List<Mensaje> mensajes = new ArrayList<>();
 
+    public abstract List<Usuario> getParticipantes();
+    
+    public boolean esParticipante(Long usuarioId) {
+        return getParticipantes().stream().anyMatch(u -> u.getId().equals(usuarioId));
+    }
+    
     @PrePersist
     public void prePersist() {
         if (fechaCreacion == null) {
-            fechaCreacion = new Date();
+            fechaCreacion = LocalDateTime.now();
         }
     }
 
@@ -49,11 +56,11 @@ public abstract class Chat {
         this.id = id;
     }
 
-    public Date getFechaCreacion() {
+    public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
 
-    public void setFechaCreacion(Date fechaCreacion) {
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
 
@@ -64,4 +71,10 @@ public abstract class Chat {
     public void setMensajes(List<Mensaje> mensajes) {
         this.mensajes = mensajes;
     }
+
+    public void agregarMensaje(Mensaje mensaje) {
+        mensaje.setChat(this);
+        mensajes.add(mensaje);
+    }
+
 }

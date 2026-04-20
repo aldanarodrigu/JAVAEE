@@ -43,8 +43,16 @@ public class JwtFilter implements ContainerRequestFilter {
 
             String email = claims.getSubject();
             String rol = claims.get("rol", String.class);
+            Long userId = claims.get("userId", Long.class);
+            
+            if (userId == null) {
+                requestContext.abortWith(Response.status(401)
+                        .entity("Token inválido (sin userId)")
+                        .build());
+                return;
+            }
 
-            requestContext.setProperty("email", email);
+            requestContext.setProperty("userId", userId);
             requestContext.setProperty("rol", rol);
             
             if (path.startsWith("auth/registro")) {

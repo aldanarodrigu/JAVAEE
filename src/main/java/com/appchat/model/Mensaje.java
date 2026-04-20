@@ -2,7 +2,9 @@ package com.appchat.model;
 
 import com.appchat.model.enums.EstadoMensaje;
 import com.appchat.model.enums.TipoMensaje;
+import com.appchat.util.LocalDateTimeConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,6 +18,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -26,9 +29,9 @@ public class Mensaje {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)
-    private Date fechaEnvio;
+    @Convert(converter = LocalDateTimeConverter.class)
+    private LocalDateTime fechaEnvio;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -52,7 +55,7 @@ public class Mensaje {
     @PrePersist
     public void prePersist() {
         if (fechaEnvio == null) {
-            fechaEnvio = new Date();
+            fechaEnvio = LocalDateTime.now();
         }
         if (estado == null) {
             estado = EstadoMensaje.ENVIADO;
@@ -67,11 +70,11 @@ public class Mensaje {
         this.id = id;
     }
 
-    public Date getFechaEnvio() {
+    public LocalDateTime getFechaEnvio() {
         return fechaEnvio;
     }
 
-    public void setFechaEnvio(Date fechaEnvio) {
+    public void setFechaEnvio(LocalDateTime fechaEnvio) {
         this.fechaEnvio = fechaEnvio;
     }
 

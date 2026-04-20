@@ -6,6 +6,8 @@
     <class>com.appchat.model.Usuario</class>
     <class>com.appchat.model.Chat</class>
     <class>com.appchat.model.ChatDirecto</class>
+    <class>com.appchat.model.ChatGrupal</class>
+    <class>com.appchat.model.Participa</class>
     <class>com.appchat.model.Mensaje</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
