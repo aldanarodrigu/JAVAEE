@@ -76,6 +76,14 @@ public class ChatEndpoint {
         session.getUserProperties().put("userId", userId);
         
         chatHub.registrar(userId, session);
+
+        try {
+            chatService.marcarMensajesPendientesAlConectar(userId);
+        } catch (Exception e) {
+            log.log(Level.WARNING,
+                    "No se pudieron marcar como entregados mensajes pendientes al conectar usuario " + userId, e);
+        }
+
         log.info("Usuario " + userId + " conectado. Sesiones activas: "
                 + chatHub.cantidadSesiones());
     }

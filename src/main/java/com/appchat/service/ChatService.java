@@ -266,12 +266,34 @@ public class ChatService {
             throw new IllegalArgumentException("Mensaje inválido");
         }
 
-        if (esAcuseLectura(dto)) {
+        if (esAcuseLecturaPorChat(dto)) {
+            if (dto.getChatId() == null) {
+                throw new IllegalArgumentException("Mensaje inválido");
+            }
+
+            marcarChatComoLeidoDesdeWebSocket(userId, dto.getChatId());
+            return;
+        }
+
+        if (esAcuseLecturaPorMensaje(dto)) {
             if (dto.getMensajeId() == null) {
                 throw new IllegalArgumentException("Mensaje inválido");
             }
 
             marcarMensajeLeidoDesdeWebSocket(userId, dto.getMensajeId(), dto.getChatId());
+            return;
+        }
+
+        if (esAcuseLectura(dto)) {
+            if (dto.getMensajeId() == null && dto.getChatId() == null) {
+                throw new IllegalArgumentException("Mensaje inválido");
+            }
+
+            if (dto.getChatId() != null) {
+                marcarChatComoLeidoDesdeWebSocket(userId, dto.getChatId());
+            } else {
+                marcarMensajeLeidoDesdeWebSocket(userId, dto.getMensajeId(), null);
+            }
             return;
         }
 
@@ -315,8 +337,75 @@ public class ChatService {
         return dto;
     }
 
+    @Transactional
+    public void marcarMensajesPendientesAlConectar(Long usuarioId) {
+        verificarUsuarioExiste(usuarioId);
+
+        List<Chat> chats = chatRepository.listarChatsDeUsuario(usuarioId);
+        List<MensajeDTO> actualizados = new ArrayList<>();
+
+        for (Chat chat : chats) {
+            List<Mensaje> pendientes = chatRepository
+                    .buscarMensajesEnviadosPendientesEntregaParaUsuarioEnChat(chat.getId(), usuarioId);
+
+            for (Mensaje mensaje : pendientes) {
+                mensaje.setEstado(EstadoMensaje.ENTREGADO);
+                actualizados.add(mapearMensaje(mensaje));
+            }
+        }
+
+        if (actualizados.isEmpty()) {
+            return;
+        }
+
+        chatRepository.flush();
+
+        for (MensajeDTO dto : actualizados) {
+            chatHub.enviarAUsuario(dto.getEmisorId(), JsonUtil.toJson(dto));
+        }
+    }
+
+    @Transactional
+    public void marcarChatComoLeidoDesdeWebSocket(Long usuarioId, Long chatId) {
+        Chat chat = chatRepository.buscarChatPorId(chatId);
+
+        if (chat == null) {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+
+        validarParticipacion(chat, usuarioId);
+
+        List<Mensaje> pendientes = chatRepository
+                .buscarMensajesPendientesLecturaParaUsuarioEnChat(chatId, usuarioId);
+
+        if (pendientes.isEmpty()) {
+            return;
+        }
+
+        List<MensajeDTO> actualizados = new ArrayList<>();
+
+        for (Mensaje mensaje : pendientes) {
+            mensaje.setEstado(EstadoMensaje.LEIDO);
+            actualizados.add(mapearMensaje(mensaje));
+        }
+
+        chatRepository.flush();
+
+        for (MensajeDTO dto : actualizados) {
+            chatHub.enviarAUsuario(dto.getEmisorId(), JsonUtil.toJson(dto));
+        }
+    }
+
     private boolean esAcuseLectura(MensajeWSDTO dto) {
         return dto.getAccion() != null && "LEIDO".equalsIgnoreCase(dto.getAccion());
+    }
+
+    private boolean esAcuseLecturaPorChat(MensajeWSDTO dto) {
+        return dto.getAccion() != null && "LEIDO_CHAT".equalsIgnoreCase(dto.getAccion());
+    }
+
+    private boolean esAcuseLecturaPorMensaje(MensajeWSDTO dto) {
+        return dto.getAccion() != null && "LEIDO_MENSAJE".equalsIgnoreCase(dto.getAccion());
     }
     
 }
