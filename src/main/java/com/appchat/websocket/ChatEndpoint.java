@@ -93,6 +93,11 @@ public class ChatEndpoint {
         
         Long userId = (Long) session.getUserProperties().get("userId");
         
+        if(message == null){
+            enviarError(session, "INVALID_MESSAGE", "El mensaje no puede estar vacio");
+            return;
+        }
+        
         try {
             chatService.procesarMensajeWebSocket(userId, message);
 
