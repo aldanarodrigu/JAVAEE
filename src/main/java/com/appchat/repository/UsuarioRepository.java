@@ -1,98 +1,85 @@
 package com.appchat.repository;
 
-import com.appchat.model.Usuario;
 import com.appchat.model.EstadoUsuario;
-import jakarta.annotation.PostConstruct;
+import com.appchat.model.Usuario;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
+@Transactional
 public class UsuarioRepository {
 
-    private final List<Usuario> usuarios = new ArrayList<>();
-
-    @PostConstruct
-    public void init() {
-
-        Usuario u1 = new Usuario();
-        u1.setId(1L);
-        u1.setNombre("José");
-        u1.setApellido("Artigas");
-        u1.setEmail("artigas@uruguay.uy");
-        u1.setPasswordHash("1234");
-        u1.setEstado(EstadoUsuario.EN_LINEA);
-
-        Usuario u2 = new Usuario();
-        u2.setId(2L);
-        u2.setNombre("Fructuoso");
-        u2.setApellido("Rivera");
-        u2.setEmail("rivera@uruguay.uy");
-        u2.setPasswordHash("1234");
-        u2.setEstado(EstadoUsuario.OCUPADO);
-
-        Usuario u3 = new Usuario();
-        u3.setId(3L);
-        u3.setNombre("Manuel");
-        u3.setApellido("Oribe");
-        u3.setEmail("oribe@uruguay.uy");
-        u3.setPasswordHash("1234");
-        u3.setEstado(EstadoUsuario.AUSENTE);
-
-        usuarios.add(u1);
-        usuarios.add(u2);
-        usuarios.add(u3);
-    }
+    @PersistenceContext
+    EntityManager em;
 
     public List<Usuario> findAll() {
-        return usuarios;
+        return em.createQuery("SELECT u FROM Usuario u", Usuario.class)
+                .getResultList();
     }
 
     public Usuario buscarPorId(Long id) {
-        for (Usuario u : usuarios) {
-            if (u.getId().equals(id)) {
-                return u;
-            }
-        }
-        return null;
+        return em.find(Usuario.class, id);
+    }
+
+    public Usuario buscarPorEmail(String email) {
+        List<Usuario> resultados = em.createQuery(
+                        "SELECT u FROM Usuario u WHERE LOWER(u.email) = LOWER(:email)", Usuario.class)
+                .setParameter("email", email)
+                .getResultList();
+
+        return resultados.isEmpty() ? null : resultados.get(0);
     }
 
     public List<Usuario> buscarPorNombreOEmail(String q) {
         if (q == null || q.isBlank()) {
-            return new ArrayList<>();
+            return List.of();
         }
 
-        String texto = q.toLowerCase();
+        String texto = "%" + q.toLowerCase() + "%";
 
-        return usuarios.stream()
-                .filter(usuario ->
-                        usuario.getNombre().toLowerCase().contains(texto) ||
-                                usuario.getApellido().toLowerCase().contains(texto) ||
-                                usuario.getEmail().toLowerCase().contains(texto)
-                )
-                .toList();
+        return em.createQuery("""
+                SELECT u
+                FROM Usuario u
+                WHERE LOWER(u.nombre) LIKE :texto
+                   OR LOWER(u.apellido) LIKE :texto
+                   OR LOWER(u.email) LIKE :texto
+                """, Usuario.class)
+                .setParameter("texto", texto)
+                .getResultList();
+    }
+
+    public Usuario guardar(Usuario usuario) {
+        if (usuario.getId() == null) {
+            em.persist(usuario);
+            return usuario;
+        }
+        return em.merge(usuario);
     }
 
     public Usuario actualizarUsuario(Long id, String nombre, String apellido, String fotoPerfil) {
-        for (Usuario u : usuarios) {
-            if (u.getId().equals(id)) {
-                if (nombre != null) u.setNombre(nombre);
-                if (apellido != null) u.setApellido(apellido);
-                if (fotoPerfil != null) u.setFotoPerfil(fotoPerfil);
-                return u;
-            }
+        Usuario u = buscarPorId(id);
+        if (u == null) {
+            return null;
         }
-        return null;
+
+        if (nombre != null) u.setNombre(nombre);
+        if (apellido != null) u.setApellido(apellido);
+        if (fotoPerfil != null) u.setFotoPerfil(fotoPerfil);
+
+        return em.merge(u);
     }
 
     public Usuario actualizarEstado(Long id, EstadoUsuario estado) {
-        for (Usuario u : usuarios) {
-            if (u.getId().equals(id)) {
-                u.setEstado(estado);
-                return u;
-            }
+        Usuario u = buscarPorId(id);
+        if (u == null) {
+            return null;
         }
-        return null;
+
+        u.setEstado(estado);
+        return em.merge(u);
     }
 }

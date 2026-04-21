@@ -1,5 +1,6 @@
 package com.appchat.model;
 
+import com.appchat.model.enums.RolSistema;
 import jakarta.persistence.*;
 
 @Entity
@@ -32,13 +33,18 @@ public class Usuario {
     @Column(nullable = false)
     private Boolean activo = true;
 
-    public Usuario() {
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rol_sistema", nullable = false, length = 30)
+    private RolSistema rolSistema = RolSistema.EMPLEADO;
 
-    // getters y setters ↓↓↓
+    public Usuario() {}
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getNombre() {
@@ -73,6 +79,14 @@ public class Usuario {
         this.passwordHash = passwordHash;
     }
 
+    public String getPassword() {
+        return passwordHash;
+    }
+
+    public void setPassword(String password) {
+        this.passwordHash = password;
+    }
+
     public String getFotoPerfil() {
         return fotoPerfil;
     }
@@ -96,10 +110,12 @@ public class Usuario {
     public void setActivo(Boolean activo) {
         this.activo = activo;
     }
-    // SOLO para uso en pruebas (repositorio en memoria).
-    // Cuando se use base de datos con JPA, el ID se genera automáticamente
-    // y este metodo no debe utilizarse.
-    public void setId(Long id) {
-        this.id = id;
+
+    public RolSistema getRolSistema() {
+        return rolSistema;
+    }
+
+    public void setRolSistema(RolSistema rolSistema) {
+        this.rolSistema = rolSistema;
     }
 }

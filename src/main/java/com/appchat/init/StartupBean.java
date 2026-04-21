@@ -1,7 +1,7 @@
 package com.appchat.init;
 
 import com.appchat.model.Usuario;
-import com.appchat.model.enums.EstadoUsuario;
+import com.appchat.model.EstadoUsuario;
 import com.appchat.model.enums.RolSistema;
 import com.appchat.repository.UsuarioRepository;
 
@@ -42,7 +42,7 @@ public class StartupBean {
         admin.setPassword(hashed);
 
         admin.setRolSistema(RolSistema.SUPER_ADMIN);
-        admin.setEstado(EstadoUsuario.INVISIBLE);
+        admin.setEstado(EstadoUsuario.DESCONECTADO); 
 
         repository.guardar(admin);
 

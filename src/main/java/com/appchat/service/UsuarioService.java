@@ -2,6 +2,7 @@ package com.appchat.service;
 
 import com.appchat.dto.UsuarioDTO;
 import com.appchat.model.Usuario;
+import com.appchat.model.enums.RolSistema;
 import com.appchat.repository.UsuarioRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -20,6 +21,25 @@ public class UsuarioService {
         }
 
         return mapToDTO(usuario);
+    }
+
+    public Usuario crearUsuario(UsuarioDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setNombre(dto.getNombre());
+        usuario.setApellido(dto.getApellido());
+        usuario.setEmail(dto.getEmail());
+        usuario.setFotoPerfil(dto.getFotoPerfil());
+        usuario.setEstado(dto.getEstado());
+        usuario.setActivo(dto.getActivo() != null ? dto.getActivo() : true);
+        usuario.setRolSistema(RolSistema.EMPLEADO);
+
+        usuario.setPasswordHash("1234");
+
+        return usuarioRepository.guardar(usuario);
     }
 
     private UsuarioDTO mapToDTO(Usuario usuario) {
