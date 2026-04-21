@@ -13,8 +13,8 @@ import java.util.List;
 @Transactional
 public class UsuarioRepository {
 
-    @PersistenceContext
-    EntityManager em;
+    @PersistenceContext(unitName = "appchatPU")
+    private EntityManager em;
 
     public List<Usuario> findAll() {
         return em.createQuery("SELECT u FROM Usuario u", Usuario.class)
