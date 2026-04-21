@@ -42,7 +42,7 @@ public class StartupBean {
         admin.setPassword(hashed);
 
         admin.setRolSistema(RolSistema.SUPER_ADMIN);
-        admin.setEstado(EstadoUsuario.DESCONECTADO); 
+        admin.setEstado(EstadoUsuario.DESCONECTADO);
 
         repository.guardar(admin);
 
