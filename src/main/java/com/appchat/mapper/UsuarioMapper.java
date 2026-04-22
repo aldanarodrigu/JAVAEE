@@ -6,6 +6,10 @@ import com.appchat.model.Usuario;
 public class UsuarioMapper {
 
     public static UsuarioDTO toDTO(Usuario usuario) {
+        if (usuario == null){
+            return null;
+        }
+
         UsuarioDTO dto = new UsuarioDTO();
 
         dto.setId(usuario.getId());
