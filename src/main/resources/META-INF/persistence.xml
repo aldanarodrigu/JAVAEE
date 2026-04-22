@@ -12,8 +12,6 @@
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
-      <property name="hibernate.show_sql" value="true"/>
-      <property name="hibernate.format_sql" value="true"/>
       <property name="eclipselink.target-database" value="PostgreSQL"/>
       <property name="eclipselink.logging.level" value="FINE"/>
     </properties>
