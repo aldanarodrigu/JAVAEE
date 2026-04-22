@@ -35,7 +35,7 @@ public class UsuarioController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<UsuarioDTO> listarUsuarios() {
-        return usuarioRepository.findAll()
+        return usuarioRepository.listarActivos()
                 .stream()
                 .map(UsuarioMapper::toDTO)
                 .collect(Collectors.toList());

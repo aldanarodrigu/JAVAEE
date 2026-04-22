@@ -21,6 +21,13 @@ public class UsuarioRepository {
                 .getResultList();
     }
 
+    public List<Usuario> listarActivos() {
+        return em.createQuery(
+                "SELECT u FROM Usuario u WHERE u.activo = true",
+                Usuario.class
+        ).getResultList();
+    }
+
     public Usuario buscarPorId(Long id) {
         return em.find(Usuario.class, id);
     }
