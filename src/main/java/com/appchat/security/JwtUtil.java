@@ -9,7 +9,7 @@ import java.util.Date;
 
 public class JwtUtil {
 
-    private static final Key KEY = Keys.hmacShaKeyFor(
+    private static final Key KEY = Keys.hmacShaKeyFor( //esto despue pasarlo a un archivo secret
             "claveSuperSecreta12345678901234567890".getBytes()
     );
 
@@ -25,11 +25,10 @@ public class JwtUtil {
                 .getBody();
     }
 
-    public static String generarToken(Long userId, String email, String rol) {
+    public static String generarToken(Long userId, String email) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("userId", userId)
-                .claim("rol", rol)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(KEY)

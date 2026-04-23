@@ -15,20 +15,21 @@ import java.util.List;
 @Consumes(MediaType.APPLICATION_JSON) // y recibe JSON tambien
 public class UsuarioController {
 
-    @Inject // Te instancia solo el usuarioService
+    @Inject
     private UsuarioService service;
 
     @POST
-    public Response crearUsuario(UsuarioDTO dto) { //recibe un dto porque JAX-RS recibe un JSON y lo convierte a dto
+    public Response crearUsuario(UsuarioDTO dto) {
         try {
-            Usuario  nuevo = service.crearUsuario(dto); //llamas al service, no podes crear nada desde aca 
-            return Response.status(Response.Status.CREATED)
-                           .entity("{\"id\": " + nuevo.getId() + "}")
-                           .build();
+            Usuario nuevo = service.crearUsuario(dto);
+
+            UsuarioResponseDTO response = new UsuarioResponseDTO();
+            response.setId(nuevo.getId());
+
+            return Response.status(Response.Status.CREATED).entity(response).build();
+
         } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.CONFLICT)
-                           .entity("{\"error\": \"" + e.getMessage() + "\"}")
-                           .build();
+            return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
         }
     }
 
@@ -42,10 +43,9 @@ public class UsuarioController {
     @Path("/{id}")
     public Response obtenerUsuario(@PathParam("id") Long id) {
         UsuarioResponseDTO usuario = service.obtenerUsuarioPorId(id);
+
         if (usuario == null) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("{\"error\": \"Usuario no encontrado\"}")
-                    .build();
+            return Response.status(Response.Status.NOT_FOUND).entity("Usuario no encontrado").build();
         }
 
         return Response.ok(usuario).build();

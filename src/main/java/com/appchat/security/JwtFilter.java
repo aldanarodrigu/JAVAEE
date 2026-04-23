@@ -19,7 +19,7 @@ public class JwtFilter implements ContainerRequestFilter {
 
         String path = requestContext.getUriInfo().getPath();
 
-        if (path.contains("auth/login")) {
+        if (path.contains("auth/login") || path.contains("auth/registro")) {
             return;
         }
 
@@ -42,7 +42,6 @@ public class JwtFilter implements ContainerRequestFilter {
                     .getBody();
 
             String email = claims.getSubject();
-            String rol = claims.get("rol", String.class);
             Long userId = claims.get("userId", Long.class);
             
             if (userId == null) {
@@ -53,15 +52,7 @@ public class JwtFilter implements ContainerRequestFilter {
             }
 
             requestContext.setProperty("userId", userId);
-            requestContext.setProperty("rol", rol);
-            
-            if (path.startsWith("auth/registro")) {
-                if (!"SUPER_ADMIN".equals(rol)) {
-                    requestContext.abortWith(Response.status(403)
-                            .entity("{\"error\": \"No autorizado\"}")
-                            .build());
-                }
-            }
+
 
         } catch (Exception e) {
             requestContext.abortWith(Response.status(401)

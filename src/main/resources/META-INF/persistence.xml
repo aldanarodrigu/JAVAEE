@@ -5,13 +5,13 @@
     <jta-data-source>jdbc/appchatDS</jta-data-source>
     <class>com.appchat.model.Usuario</class>
     <class>com.appchat.model.Chat</class>
-    <class>com.appchat.model.ChatDirecto</class>
-    <class>com.appchat.model.ChatGrupal</class>
     <class>com.appchat.model.Participa</class>
     <class>com.appchat.model.Mensaje</class>
+    <class>com.appchat.model.Comunidad</class>
+    <class>com.appchat.model.MiembroComunidad</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
-      <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
+      <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
       <property name="hibernate.show_sql" value="true"/>
       <property name="hibernate.format_sql" value="true"/>
       <property name="eclipselink.target-database" value="PostgreSQL"/>

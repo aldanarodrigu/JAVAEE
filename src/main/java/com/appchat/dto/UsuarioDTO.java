@@ -7,6 +7,7 @@ public class UsuarioDTO{
     private String nombre;
     private String apellido;
     private String email;
+    private String userName;
     private String password;
     private EstadoUsuario estado;
 
@@ -42,4 +43,22 @@ public class UsuarioDTO{
         this.password = password; 
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public EstadoUsuario getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoUsuario estado) {
+        this.estado = estado;
+    }
+
+    
+    
 }
