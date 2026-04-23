@@ -1,8 +1,8 @@
 package com.appchat.repository;
 
 import com.appchat.model.Chat;
-import com.appchat.model.ChatDirecto;
 import com.appchat.model.Mensaje;
+import com.appchat.model.enums.TipoChat;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -19,49 +19,34 @@ public class ChatRepository {
         return em.find(Chat.class, chatId);
     }
 
-    public ChatDirecto buscarChatDirectoEntreUsuarios(Long usuarioUnoId, Long usuarioDosId) {
-        try {
-            return em.createQuery(
-                    "SELECT c FROM ChatDirecto c "
-                    + "JOIN FETCH c.usuarioUno "
-                    + "JOIN FETCH c.usuarioDos "
-                    + "WHERE (c.usuarioUno.id = :unoId AND c.usuarioDos.id = :dosId) "
-                    + "OR    (c.usuarioUno.id = :dosId AND c.usuarioDos.id = :unoId)",
-                    ChatDirecto.class)
-                    .setParameter("unoId", usuarioUnoId)
-                    .setParameter("dosId", usuarioDosId)
-                    .getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
+    public Chat buscarChatDirectoEntreUsuarios(Long u1, Long u2, Long comunidadId) {
+        List<Chat> resultados = em.createQuery("""
+            SELECT c FROM Chat c
+            JOIN c.participantes p
+            WHERE c.tipo = :tipo
+              AND c.comunidad.id = :comunidadId
+            GROUP BY c
+            HAVING COUNT(p) = 2
+               AND SUM(CASE WHEN p.usuario.id IN (:u1, :u2) THEN 1 ELSE 0 END) = 2
+        """, Chat.class)
+        .setParameter("tipo", TipoChat.DIRECTO)
+        .setParameter("u1", u1)
+        .setParameter("u2", u2)
+        .setParameter("comunidadId", comunidadId)
+        .getResultList();
+
+        return resultados.isEmpty() ? null : resultados.get(0);
     }
 
     public List<Chat> listarChatsDeUsuario(Long usuarioId) {
-        // chats directos donde participa
-        List<Chat> directos = em.createQuery(
-                "SELECT c FROM ChatDirecto c "
-                + "JOIN FETCH c.usuarioUno "
-                + "JOIN FETCH c.usuarioDos "
-                + "WHERE c.usuarioUno.id = :usuarioId OR c.usuarioDos.id = :usuarioId",
-                Chat.class)
-                .setParameter("usuarioId", usuarioId)
-                .getResultList();
-
-        // chats grupales donde participa
-        List<Chat> grupales = em.createQuery(
-                "SELECT DISTINCT c FROM ChatGrupal c "
-                + "JOIN FETCH c.participantes p "
-                + "JOIN FETCH p.usuario "
-                + "WHERE p.usuario.id = :usuarioId",
-                Chat.class)
-                .setParameter("usuarioId", usuarioId)
-                .getResultList();
-
-        List<Chat> todos = new java.util.ArrayList<>();
-        todos.addAll(directos);
-        todos.addAll(grupales);
-        todos.sort((a, b) -> b.getFechaCreacion().compareTo(a.getFechaCreacion()));
-        return todos;
+        return em.createQuery("""
+            SELECT DISTINCT c FROM Chat c
+            JOIN c.participantes p
+            WHERE p.usuario.id = :usuarioId
+            ORDER BY c.fechaCreacion DESC
+        """, Chat.class)
+        .setParameter("usuarioId", usuarioId)
+        .getResultList();
     }
 
     public void guardarChat(Chat chat) {
