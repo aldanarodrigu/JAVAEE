@@ -1,28 +1,15 @@
 package com.appchat.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import com.appchat.model.enums.RolGrupo;
+import com.appchat.model.enums.TipoChat;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
 @Table(name = "chats")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "tipo_chat")
-public abstract class Chat {
+public class Chat {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,16 +18,25 @@ public abstract class Chat {
     @Column(nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoChat tipo; 
+
+    private String nombre;
+    private String descripcion;
+    private String fotoUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "comunidad_id", nullable = false)
+    private Comunidad comunidad;
+
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Participa> participantes = new ArrayList<>();
+
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("fechaEnvio ASC")
     private List<Mensaje> mensajes = new ArrayList<>();
 
-    public abstract List<Usuario> getParticipantes();
-    
-    public boolean esParticipante(Long usuarioId) {
-        return getParticipantes().stream().anyMatch(u -> u.getId().equals(usuarioId));
-    }
-    
     @PrePersist
     public void prePersist() {
         if (fechaCreacion == null) {
@@ -64,6 +60,54 @@ public abstract class Chat {
         this.fechaCreacion = fechaCreacion;
     }
 
+    public TipoChat getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoChat tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public String getFotoUrl() {
+        return fotoUrl;
+    }
+
+    public void setFotoUrl(String fotoUrl) {
+        this.fotoUrl = fotoUrl;
+    }
+
+    public Comunidad getComunidad() {
+        return comunidad;
+    }
+
+    public void setComunidad(Comunidad comunidad) {
+        this.comunidad = comunidad;
+    }
+
+    public List<Participa> getListaParticipaciones() {
+        return participantes;
+    }
+
+    public void setParticipantes(List<Participa> participantes) {
+        this.participantes = participantes;
+    }
+
     public List<Mensaje> getMensajes() {
         return mensajes;
     }
@@ -72,9 +116,22 @@ public abstract class Chat {
         this.mensajes = mensajes;
     }
 
-    public void agregarMensaje(Mensaje mensaje) {
-        mensaje.setChat(this);
-        mensajes.add(mensaje);
+
+
+    public List<Usuario> getParticipantes() {
+        return participantes.stream().map(Participa::getUsuario).toList();
     }
 
+    public void agregarParticipante(Usuario usuario, RolGrupo rol) {
+        Participa p = new Participa();
+        p.setUsuario(usuario);
+        p.setChat(this);
+        p.setRol(rol);
+        participantes.add(p);
+    }
+
+    public boolean esParticipante(Long usuarioId) {
+        return participantes.stream()
+                .anyMatch(p -> p.getUsuario().getId().equals(usuarioId));
+    }
 }

@@ -69,4 +69,15 @@ public class UsuarioRepository {
             return false;
         }
     }
+
+    public Usuario buscarPorUsername(String username) {
+        try {
+            return em.createQuery(
+                "SELECT u FROM Usuario u WHERE u.username = :username", Usuario.class)
+                .setParameter("username", username) 
+                .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
 }

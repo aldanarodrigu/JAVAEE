@@ -1,8 +1,9 @@
 package com.appchat.model;
 
 import com.appchat.model.enums.EstadoUsuario;
-import com.appchat.model.enums.RolSistema;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
@@ -17,6 +18,9 @@ public class Usuario {
 
     @Column(nullable = false)
     private String apellido;
+    
+    @Column(nullable = false, unique = true)
+    private String username;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -25,13 +29,15 @@ public class Usuario {
     private String password;
 
     @Column(nullable = false)
-    @Enumerated(EnumType.ORDINAL)
-    private EstadoUsuario estado;
-    
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private RolSistema rolSistema;
+    private EstadoUsuario estado;
 
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private List<Participa> participaciones = new ArrayList<>(); //estas son las participaciones de chat tanto grupales como directos
+    
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private List<MiembroComunidad> comunidades = new ArrayList<>();
+    
     public Long getId(){ 
         return id; 
     }
@@ -80,12 +86,28 @@ public class Usuario {
         this.estado = estado; 
     }
 
-    public RolSistema getRolSistema() {
-        return rolSistema;
+    public String getUsername() {
+        return username;
     }
 
-    public void setRolSistema(RolSistema rolSistema) {
-        this.rolSistema = rolSistema;
+    public void setUsername(String username) {
+        this.username = username;
     }
-    
+
+    public List<Participa> getParticipaciones() {
+        return participaciones;
+    }
+
+    public void setParticipaciones(List<Participa> participaciones) {
+        this.participaciones = participaciones;
+    }
+
+    public List<MiembroComunidad> getComunidades() {
+        return comunidades;
+    }
+
+    public void setComunidades(List<MiembroComunidad> comunidades) {
+        this.comunidades = comunidades;
+    }
+
 }
