@@ -44,6 +44,7 @@ public class JwtFilter implements ContainerRequestFilter {
             String email = claims.getSubject();
             String rol = claims.get("rol", String.class);
             Long userId = claims.get("userId", Long.class);
+            requestContext.setProperty("email", email);
             
             if (userId == null) {
                 requestContext.abortWith(Response.status(401)

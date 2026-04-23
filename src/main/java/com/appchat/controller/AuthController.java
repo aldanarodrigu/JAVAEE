@@ -49,6 +49,7 @@ public class AuthController {
 
     try {
         String email = (String) requestContext.getProperty("email");
+        System.out.println("EMAIL EN CONTROLLER: [" + email + "]");
 
         Usuario nuevo = authService.registrarUsuario(email, dto);
         
