@@ -1,7 +1,9 @@
 package com.appchat.model;
 
-import com.appchat.model.enums.RolSistema;
+import com.appchat.model.enums.EstadoUsuario;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
@@ -11,107 +13,101 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false)
     private String nombre;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false)
     private String apellido;
+    
+    @Column(nullable = false, unique = true)
+    private String username;
 
-    @Column(nullable = false, unique = true, length = 150)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false, length = 255)
-    private String passwordHash;
-
-    @Column(name = "foto_perfil", length = 500)
-    private String fotoPerfil;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    private EstadoUsuario estado = EstadoUsuario.DESCONECTADO;
+    @Column(nullable = false)
+    private String password;
 
     @Column(nullable = false)
-    private Boolean activo = true;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "rol_sistema", nullable = false, length = 30)
-    private RolSistema rolSistema = RolSistema.EMPLEADO;
+    private EstadoUsuario estado;
 
-    public Usuario() {}
-
-    public Long getId() {
-        return id;
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private List<Participa> participaciones = new ArrayList<>(); //estas son las participaciones de chat tanto grupales como directos
+    
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private List<MiembroComunidad> comunidades = new ArrayList<>();
+    
+    public Long getId(){ 
+        return id; 
+    }
+    
+    public void setId(Long id){ 
+        this.id = id; 
+    }
+    
+    public String getNombre(){ 
+     return nombre; 
+    }
+    
+    public void setNombre(String nombre){ 
+        this.nombre = nombre; 
+    }
+    
+    public String getApellido(){ 
+        return apellido; 
+    }
+    
+    public void setApellido(String apellido){ 
+        this.apellido = apellido; 
+    }
+    
+    public String getEmail(){ 
+        return email; 
+    }
+    
+    public void setEmail(String email){ 
+        this.email = email; 
+    }
+    
+    public String getPassword(){ 
+        return password; 
+    }
+    
+    public void setPassword(String password){ 
+        this.password = password; 
+    }
+    
+    public EstadoUsuario getEstado(){ 
+        return estado; 
+    }
+    
+    public void setEstado(EstadoUsuario estado){ 
+        this.estado = estado; 
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getUsername() {
+        return username;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getApellido() {
-        return apellido;
+    public List<Participa> getParticipaciones() {
+        return participaciones;
     }
 
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
+    public void setParticipaciones(List<Participa> participaciones) {
+        this.participaciones = participaciones;
     }
 
-    public String getEmail() {
-        return email;
+    public List<MiembroComunidad> getComunidades() {
+        return comunidades;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setComunidades(List<MiembroComunidad> comunidades) {
+        this.comunidades = comunidades;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public String getPassword() {
-        return passwordHash;
-    }
-
-    public void setPassword(String password) {
-        this.passwordHash = password;
-    }
-
-    public String getFotoPerfil() {
-        return fotoPerfil;
-    }
-
-    public void setFotoPerfil(String fotoPerfil) {
-        this.fotoPerfil = fotoPerfil;
-    }
-
-    public EstadoUsuario getEstado() {
-        return estado;
-    }
-
-    public void setEstado(EstadoUsuario estado) {
-        this.estado = estado;
-    }
-
-    public Boolean getActivo() {
-        return activo;
-    }
-
-    public void setActivo(Boolean activo) {
-        this.activo = activo;
-    }
-
-    public RolSistema getRolSistema() {
-        return rolSistema;
-    }
-
-    public void setRolSistema(RolSistema rolSistema) {
-        this.rolSistema = rolSistema;
-    }
 }

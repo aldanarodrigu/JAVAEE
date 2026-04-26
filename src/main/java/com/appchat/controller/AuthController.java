@@ -29,42 +29,31 @@ public class AuthController {
         try {
             Usuario u = authService.login(dto.getEmail(), dto.getPassword());
 
-            String token = JwtUtil.generarToken(u.getId(), u.getEmail(), u.getRolSistema().name());
+            String token = JwtUtil.generarToken(u.getId(), u.getEmail());
 
-            return Response.ok("{\"token\": \"" + token + "\"}").build();
+            return Response.ok(token).build();
 
-        } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
-                    .build();
+        }catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
         }
     }
     
     
     @POST
     @Path("/registro")
-    public Response registrarUsuario(
-        @Context ContainerRequestContext requestContext,
-        UsuarioDTO dto) {
+    public Response registrarUsuario(UsuarioDTO dto) {
 
-    try {
-        String email = (String) requestContext.getProperty("email");
-        System.out.println("EMAIL EN CONTROLLER: [" + email + "]");
+        try {
+            Usuario nuevo = authService.registrarUsuario(dto.getEmail(), dto);
 
-        Usuario nuevo = authService.registrarUsuario(email, dto);
-        
-        return Response.status(201)
-                .entity("{\"id\": " + nuevo.getId() + "}")
-                .build();
+            return Response.status(Response.Status.CREATED).entity(nuevo.getId()).build();
 
-    } catch (SecurityException e) {
-        return Response.status(403)
-                .entity("{\"error\": \"" + e.getMessage() + "\"}")
-                .build();
+        } catch (SecurityException e) {
+            return Response.status(Response.Status.FORBIDDEN).entity(e.getMessage()).build();
 
-    } catch (Exception e) {
-        e.printStackTrace();
-        return Response.status(500).entity("Error interno").build();
+        }catch(Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error interno").build();
+        }
     }
-    }    
-}
+}    

@@ -31,13 +31,19 @@ public class ChatHub {
 
     public void enviarAUsuario(Long userId, String mensaje) {
         Set<Session> sessions = sesiones.get(userId);
-        if (sessions == null) return;
+        
+        if (sessions == null) 
+            return;
 
-        sessions.removeIf(s -> !s.isOpen());
-
-        for (Session s : sessions) {
+        for (Session s : Set.copyOf(sessions)) {
+            
+            if(!s.isOpen()){ //para evitar acumular sesiones muertas
+                remover(userId,s);
+                continue;
+            }
+            
             s.getAsyncRemote().sendText(mensaje, result -> {
-                if (!result.isOK()) {
+                if (!result.isOK()){
                     log.log(Level.WARNING, "Fallo al enviar a usuario " + userId, result.getException());
                     remover(userId, s);
                 }

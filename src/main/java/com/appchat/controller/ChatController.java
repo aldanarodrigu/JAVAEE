@@ -28,6 +28,7 @@ public class ChatController {
         Long usuarioId = getUsuarioId();
 
         List<ChatResumenDTO> chats = service.listarChatsDelUsuario(usuarioId);
+        
         return Response.ok(chats).build();
     }
 
@@ -48,14 +49,13 @@ public class ChatController {
     @POST
     public Response crearOAbrirChatDirecto(ChatDirectoRequestDTO request) {
 
-        if (request == null || request.getUsuarioDestinoId() == null) {
+        if (request == null || request.getUsuarioDestinoId() == null || request.getComunidadId() == null) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
 
         Long usuarioId = getUsuarioId();
 
-        ChatResumenDTO chat =
-                service.crearOAbrirChatDirecto(usuarioId, request.getUsuarioDestinoId());
+        ChatResumenDTO chat = service.crearOAbrirChatDirecto(usuarioId, request.getUsuarioDestinoId(), request.getComunidadId());
 
         return Response.ok(chat).build();
     }
