@@ -1,6 +1,7 @@
 package com.appchat.repository;
 
 import com.appchat.model.Usuario;
+import com.appchat.model.enums.EstadoUsuario;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -28,7 +29,18 @@ public class UsuarioRepository {
             return null;
         }
     }
-    
+
+    public List<Usuario> buscarPorNombreOEmail(String q) {
+        return em.createQuery(
+                        "SELECT u FROM Usuario u " +
+                                "WHERE LOWER(u.nombre) LIKE LOWER(:q) " +
+                                "OR LOWER(u.email) LIKE LOWER(:q)",
+                        Usuario.class
+                )
+                .setParameter("q", "%" + q + "%")
+                .getResultList();
+    }
+
     public void eliminar(Long id){
         Usuario usuario = em.find(Usuario.class, id);
         if(usuario != null){
@@ -43,17 +55,23 @@ public class UsuarioRepository {
     public boolean existeUsuario(Long id){
         return em.find(Usuario.class, id) != null;
     }
-    
+
     public List<Usuario> listarUsuarios(){
-        return em.createQuery("SELECT u FROM Usuario u", Usuario.class).getResultList();
+        return em.createQuery(
+                "SELECT u FROM Usuario u",
+                Usuario.class
+        ).getResultList();
     }
-    
-    public List<Usuario> buscarPorNombres(String nombre){
-        return em.createQuery("SELECT u FROM Usuario u WHERE u.nombre LIKE :nombre", Usuario.class)
-                .setParameter("nombre", "%" + nombre + "%")
+
+    public List<Usuario> listarUsuariosActivos(){
+        return em.createQuery(
+                        "SELECT u FROM Usuario u WHERE u.estado <> :estado",
+                        Usuario.class
+                )
+                .setParameter("estado", EstadoUsuario.INVISIBLE)
                 .getResultList();
     }
-    
+
     public Usuario buscarPorId(Long id){
         return em.find(Usuario.class, id);
     }
@@ -67,6 +85,17 @@ public class UsuarioRepository {
             return true;
         } catch (NoResultException e) {
             return false;
+        }
+    }
+
+    public Usuario buscarPorUsername(String username) {
+        try {
+            return em.createQuery(
+                "SELECT u FROM Usuario u WHERE u.username = :username", Usuario.class)
+                .setParameter("username", username) 
+                .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
         }
     }
 }

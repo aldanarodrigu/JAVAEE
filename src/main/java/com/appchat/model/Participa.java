@@ -33,7 +33,7 @@ public class Participa {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "chat_id", nullable = false)
-    private ChatGrupal chat;
+    private Chat chat;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime fechaUnion;
@@ -52,10 +52,6 @@ public class Participa {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public Usuario getUsuario() {
         return usuario;
     }
@@ -64,20 +60,16 @@ public class Participa {
         this.usuario = usuario;
     }
 
-    public ChatGrupal getChat() {
+    public Chat getChat() { 
         return chat;
     }
 
-    public void setChat(ChatGrupal chat) {
+    public void setChat(Chat chat) {
         this.chat = chat;
     }
 
     public LocalDateTime getFechaUnion() {
         return fechaUnion;
-    }
-
-    public void setFechaUnion(LocalDateTime fechaUnion) {
-        this.fechaUnion = fechaUnion;
     }
 
     public RolGrupo getRol() {
@@ -87,5 +79,4 @@ public class Participa {
     public void setRol(RolGrupo rol) {
         this.rol = rol;
     }
-    
 }

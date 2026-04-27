@@ -11,8 +11,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.Context;
+import java.util.Collections;
 
 
 @Path("/auth")
@@ -25,41 +24,35 @@ public class AuthController {
 
     @POST
     @Path("/login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response login(LoginDTO dto) {
         try {
             Usuario u = authService.login(dto.getEmail(), dto.getPassword());
 
-            String token = JwtUtil.generarToken(u.getId(), u.getEmail(), u.getRolSistema().name());
+            String token = JwtUtil.generarToken(u.getId(), u.getEmail());
 
-            return Response.ok("{\"token\": \"" + token + "\"}").build();
+            return Response.ok(Collections.singletonMap("token", token)).build();
 
         } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
-                    .build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(Collections.singletonMap("error", e.getMessage())).build();
         }
     }
     
     
     @POST
     @Path("/registro")
-    public Response registrarUsuario(
-        @Context ContainerRequestContext requestContext,
-        UsuarioDTO dto) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response registrarUsuario(UsuarioDTO dto) {
 
-    try {
-        String email = (String) requestContext.getProperty("email");
+        try {
+            Usuario nuevo = authService.registrarUsuario(dto.getEmail(), dto);
 
-        Usuario nuevo = authService.registrarUsuario(email, dto);
-        
-        return Response.status(201)
-                .entity("{\"id\": " + nuevo.getId() + "}")
-                .build();
+            return Response.status(Response.Status.CREATED).entity(Collections.singletonMap("id", nuevo.getId())).build();
 
-    } catch (SecurityException e) {
-        return Response.status(403)
-                .entity("{\"error\": \"" + e.getMessage() + "\"}")
-                .build();
+        } catch (SecurityException e) {
+            return Response.status(Response.Status.FORBIDDEN).entity(Collections.singletonMap("error", e.getMessage())).build();
 
     } catch (IllegalArgumentException e) {
         return Response.status(Response.Status.BAD_REQUEST)
@@ -70,5 +63,4 @@ public class AuthController {
         e.printStackTrace();
         return Response.status(500).entity("Error interno").build();
     }
-    }    
-}
+}    

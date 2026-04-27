@@ -1,7 +1,6 @@
 package com.appchat.dto;
 
 import com.appchat.model.enums.EstadoUsuario;
-import com.appchat.model.enums.RolSistema;
 
 public class UsuarioResponseDTO {
 
@@ -9,8 +8,8 @@ public class UsuarioResponseDTO {
     private String nombre;
     private String apellido;
     private String email;
+    private String username;
     private EstadoUsuario estado;
-    private RolSistema rolSistema;
 
     public Long getId() {
         return id;
@@ -52,11 +51,12 @@ public class UsuarioResponseDTO {
         this.estado = estado;
     }
 
-    public RolSistema getRolSistema() {
-        return rolSistema;
+    public String getUsername() {
+        return username;
     }
 
-    public void setRolSistema(RolSistema rolSistema) {
-        this.rolSistema = rolSistema;
+    public void setUsername(String username) {
+        this.username = username;
     }
+    
 }

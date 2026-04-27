@@ -5,11 +5,11 @@ import com.appchat.dto.HistorialMensajesDTO;
 import com.appchat.dto.MensajeDTO;
 import com.appchat.dto.MensajeWSDTO;
 import com.appchat.model.Chat;
-import com.appchat.model.ChatDirecto;
-import com.appchat.model.ChatGrupal;
+import com.appchat.model.Comunidad;
 import com.appchat.model.Mensaje;
 import com.appchat.model.Usuario;
 import com.appchat.model.enums.EstadoMensaje;
+import com.appchat.model.enums.TipoChat;
 import com.appchat.model.enums.TipoMensaje;
 import com.appchat.repository.ChatRepository;
 import com.appchat.repository.UsuarioRepository;
@@ -21,7 +21,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +36,9 @@ public class ChatService {
     
     @Inject 
     private ChatHub chatHub;
+    
+    @Inject
+    private ComunidadService comunidadService;
 
     @Transactional
     public MensajeDTO enviarMensaje(Long chatId, Long emisorId, String contenido) {
@@ -139,7 +141,8 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatResumenDTO crearOAbrirChatDirecto(Long usuarioAutenticadoId, Long usuarioDestinoId) {
+    public ChatResumenDTO crearOAbrirChatDirecto(Long usuarioAutenticadoId, Long usuarioDestinoId, Long comunidadId) {
+        
         if (usuarioAutenticadoId.equals(usuarioDestinoId)) {
             throw new IllegalArgumentException("No se puede crear un chat directo contigo mismo");
         }
@@ -147,14 +150,27 @@ public class ChatService {
         Usuario usuarioAutenticado = verificarUsuarioExiste(usuarioAutenticadoId);
         Usuario usuarioDestino = verificarUsuarioExiste(usuarioDestinoId);
 
-        ChatDirecto chatExistente = chatRepository.buscarChatDirectoEntreUsuarios(usuarioAutenticadoId, usuarioDestinoId);
+        Comunidad comunidad = comunidadService.buscarPorId(comunidadId);
+        if(comunidad == null){
+            throw new WebApplicationException("Comunidad no existe", 404);
+        }
+        
+        if (!comunidadService.sonMiembros(comunidadId, usuarioAutenticadoId, usuarioDestinoId)) {
+        throw new WebApplicationException("Ambos usuarios deben pertenecer a la comunidad", 403);
+    }
+        
+        Chat chatExistente = chatRepository.buscarChatDirectoEntreUsuarios(usuarioAutenticadoId, usuarioDestinoId, comunidadId);
         if (chatExistente != null) {
             return mapearResumen(chatExistente, usuarioAutenticadoId);
         }
 
-        ChatDirecto chatNuevo = new ChatDirecto();
-        chatNuevo.setUsuarioUno(usuarioAutenticado);
-        chatNuevo.setUsuarioDos(usuarioDestino);
+        Chat chatNuevo = new Chat();
+        chatNuevo.setTipo(TipoChat.DIRECTO);
+        chatNuevo.setComunidad(comunidad);
+
+        chatNuevo.agregarParticipante(usuarioAutenticado, null);
+        chatNuevo.agregarParticipante(usuarioDestino, null);
+
         chatRepository.guardarChat(chatNuevo);
 
         return mapearResumen(chatNuevo, usuarioAutenticadoId);
@@ -201,16 +217,24 @@ public class ChatService {
         dto.setId(chat.getId());
         dto.setFechaCreacion(chat.getFechaCreacion());
 
-        if (chat instanceof ChatDirecto cd) {
-            Usuario interlocutor = cd.getUsuarioUno().getId().equals(usuarioId)
-                    ? cd.getUsuarioDos()
-                    : cd.getUsuarioUno();
-            dto.setNombre(interlocutor.getNombre() + " " + interlocutor.getApellido());
+        if (chat.getTipo() == TipoChat.DIRECTO) {
+
+            Usuario otro = chat.getParticipantes().stream()
+                    .filter(u -> !u.getId().equals(usuarioId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (otro != null) {
+                dto.setNombre(otro.getNombre() + " " + otro.getApellido());
+            }
+
             dto.setTipo("DIRECTO");
-        } else if (chat instanceof ChatGrupal cg) {
-            dto.setNombre(cg.getNombre());
-            dto.setFotoUrl(cg.getFotoUrl());
-            dto.setTipo("GRUPAL");
+
+        } else { // canal o grupo
+
+            dto.setNombre(chat.getNombre());
+            dto.setFotoUrl(chat.getFotoUrl());
+            dto.setTipo("GRUPO");
         }
 
         Mensaje ultimo = chatRepository.buscarUltimoMensaje(chat.getId());
@@ -219,8 +243,8 @@ public class ChatService {
             dto.setUltimoMensajeFecha(ultimo.getFechaEnvio());
         }
 
-        return dto;
-    }
+    return dto;
+}
 
     private List<MensajeDTO> mapearMensajes(List<Mensaje> mensajes) {
         List<MensajeDTO> respuestas = new ArrayList<>();

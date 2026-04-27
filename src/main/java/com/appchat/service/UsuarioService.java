@@ -4,7 +4,6 @@ import com.appchat.dto.UsuarioResponseDTO;
 import com.appchat.dto.UsuarioDTO;
 import com.appchat.model.Usuario;
 import com.appchat.model.enums.EstadoUsuario;
-import com.appchat.model.enums.RolSistema;
 import com.appchat.repository.UsuarioRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -36,12 +35,12 @@ public class UsuarioService{
         usuario.setNombre(usuarioDto.getNombre());
         usuario.setApellido(usuarioDto.getApellido());
         usuario.setEmail(usuarioDto.getEmail());
+        usuario.setUsername(usuarioDto.getUserName());
         // TODO: hashear la password antes de guardar
         //usuario.setPassword(usuarioDto.getPassword());
         String hashed = BCrypt.hashpw(usuarioDto.getPassword(), BCrypt.gensalt());
         usuario.setPassword(hashed);
         usuario.setEstado(EstadoUsuario.INVISIBLE);
-        usuario.setRolSistema(RolSistema.EMPLEADO);
         
         repository.guardar(usuario); // LLAMAS AL REPOSITORIO DE USUARIO, ACA NO PODES DIRECTAMENTE CON LA BD!!
         
@@ -50,7 +49,7 @@ public class UsuarioService{
 
     @Transactional
     public List<UsuarioResponseDTO> listarUsuarios() {
-        return repository.listarUsuarios().stream()
+        return repository.listarUsuariosActivos().stream()
                 .map(this::mapearUsuario)
                 .collect(Collectors.toList());
     }
@@ -65,6 +64,13 @@ public class UsuarioService{
         return mapearUsuario(usuario);
     }
 
+    @Transactional
+    public List<UsuarioResponseDTO> buscarUsuarios(String q) {
+        return repository.buscarPorNombreOEmail(q).stream()
+                .map(this::mapearUsuario)
+                .collect(Collectors.toList());
+    }
+
     private UsuarioResponseDTO mapearUsuario(Usuario usuario) {
         UsuarioResponseDTO dto = new UsuarioResponseDTO();
         dto.setId(usuario.getId());
@@ -72,7 +78,6 @@ public class UsuarioService{
         dto.setApellido(usuario.getApellido());
         dto.setEmail(usuario.getEmail());
         dto.setEstado(usuario.getEstado());
-        dto.setRolSistema(usuario.getRolSistema());
         return dto;
     }
     
@@ -84,6 +89,18 @@ public class UsuarioService{
         if (password == null || !PASSWORD_PATTERN.matcher(password).matches()) {
             throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres, una mayúscula y un número");
         }
+    }
+    
+    public Usuario obtenerPorId(Long id){
+        return repository.buscarPorId(id);
+    }
+    
+    public boolean existeusuario(Long id){
+        return repository.existeUsuario(id);
+    }
+
+    Usuario buscarPorUsername(String username) {
+        return repository.buscarPorUsername(username);
     }
     
 }

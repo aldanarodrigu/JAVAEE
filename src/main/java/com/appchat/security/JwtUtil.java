@@ -34,11 +34,10 @@ public class JwtUtil {
                 .getBody();
     }
 
-    public static String generarToken(Long userId, String email, String rol) {
+    public static String generarToken(Long userId, String email) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("userId", userId)
-                .claim("rol", rol)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(KEY)
