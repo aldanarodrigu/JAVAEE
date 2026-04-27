@@ -4,6 +4,7 @@ import com.appchat.dto.UsuarioDTO;
 import com.appchat.dto.UsuarioResponseDTO;
 import com.appchat.model.Usuario;
 import com.appchat.dto.ActualizarUsuarioDTO;
+import com.appchat.dto.ActualizarEstadoDTO;
 import com.appchat.service.UsuarioService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -77,5 +78,19 @@ public class UsuarioController {
         }
 
         return Response.ok(usuarioActualizado).build();
+    }
+
+    @PUT
+    @Path("/{id}/estado")
+    public Response actualizarEstado(@PathParam("id") Long id, ActualizarEstadoDTO dto) {
+        UsuarioResponseDTO usuario = service.actualizarEstado(id, dto.getEstado());
+
+        if (usuario == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Usuario no encontrado")
+                    .build();
+        }
+
+        return Response.ok(usuario).build();
     }
 }
