@@ -9,9 +9,18 @@ import java.util.Date;
 
 public class JwtUtil {
 
-    private static final Key KEY = Keys.hmacShaKeyFor( //esto despue pasarlo a un archivo secret
-            "claveSuperSecreta12345678901234567890".getBytes()
-    );
+    private static final String JWT_SECRET = System.getenv("JWT_SECRET");
+    private static final Key KEY;
+
+    static {
+        if (JWT_SECRET == null || JWT_SECRET.trim().isEmpty()) {
+            throw new IllegalStateException("Falta la variable de entorno JWT_SECRET");
+        }
+        if (JWT_SECRET.length() < 32) {
+            throw new IllegalStateException("JWT_SECRET debe tener al menos 32 caracteres");
+        }
+        KEY = Keys.hmacShaKeyFor(JWT_SECRET.getBytes());
+    }
 
     public static Key getKey() {
         return KEY;
