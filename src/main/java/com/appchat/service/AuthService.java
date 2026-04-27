@@ -12,7 +12,6 @@ import org.mindrot.jbcrypt.BCrypt;
 @ApplicationScoped
 public class AuthService {
     
-
     @Inject
     private UsuarioRepository repository;
     

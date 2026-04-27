@@ -44,7 +44,7 @@ public class UsuarioService{
 
     @Transactional
     public List<UsuarioResponseDTO> listarUsuarios() {
-        return repository.listarUsuarios().stream()
+        return repository.listarUsuariosActivos().stream()
                 .map(this::mapearUsuario)
                 .collect(Collectors.toList());
     }
@@ -57,6 +57,13 @@ public class UsuarioService{
         }
 
         return mapearUsuario(usuario);
+    }
+
+    @Transactional
+    public List<UsuarioResponseDTO> buscarUsuarios(String q) {
+        return repository.buscarPorNombreOEmail(q).stream()
+                .map(this::mapearUsuario)
+                .collect(Collectors.toList());
     }
 
     private UsuarioResponseDTO mapearUsuario(Usuario usuario) {
