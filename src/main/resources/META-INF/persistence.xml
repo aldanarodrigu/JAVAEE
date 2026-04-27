@@ -11,11 +11,12 @@
     <class>com.appchat.model.MiembroComunidad</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
-      <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+      <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
       <property name="hibernate.show_sql" value="true"/>
       <property name="hibernate.format_sql" value="true"/>
       <property name="eclipselink.target-database" value="PostgreSQL"/>
       <property name="eclipselink.logging.level" value="FINE"/>
+      <property name="eclipselink.cache.shared.default" value="false"/>
     </properties>
   </persistence-unit>
 </persistence>

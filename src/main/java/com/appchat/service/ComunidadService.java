@@ -5,12 +5,14 @@ import com.appchat.model.Comunidad;
 import com.appchat.model.Usuario;
 import com.appchat.model.enums.RolComunidad;
 import com.appchat.repository.ComunidadRepository;
-import static com.fasterxml.jackson.databind.cfg.CoercionInputShape.String;
+
 import jakarta.inject.Inject;
-import jakarta.resource.spi.ApplicationServerInternalException;
+
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.enterprise.context.ApplicationScoped;
 
+@ApplicationScoped
 public class ComunidadService {
     
     @Inject
