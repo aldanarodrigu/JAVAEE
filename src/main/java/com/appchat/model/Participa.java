@@ -60,11 +60,11 @@ public class Participa {
         this.usuario = usuario;
     }
 
-    public Chat getChat() {   // 🔥 FIX
+    public Chat getChat() { 
         return chat;
     }
 
-    public void setChat(Chat chat) { // 🔥 FIX
+    public void setChat(Chat chat) {
         this.chat = chat;
     }
 
