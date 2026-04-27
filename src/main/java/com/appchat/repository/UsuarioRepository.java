@@ -1,6 +1,7 @@
 package com.appchat.repository;
 
 import com.appchat.model.Usuario;
+import com.appchat.model.enums.EstadoUsuario;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -43,9 +44,21 @@ public class UsuarioRepository {
     public boolean existeUsuario(Long id){
         return em.find(Usuario.class, id) != null;
     }
-    
+
     public List<Usuario> listarUsuarios(){
-        return em.createQuery("SELECT u FROM Usuario u", Usuario.class).getResultList();
+        return em.createQuery(
+                "SELECT u FROM Usuario u",
+                Usuario.class
+        ).getResultList();
+    }
+
+    public List<Usuario> listarUsuariosActivos(){
+        return em.createQuery(
+                        "SELECT u FROM Usuario u WHERE u.estado <> :estado",
+                        Usuario.class
+                )
+                .setParameter("estado", EstadoUsuario.INVISIBLE)
+                .getResultList();
     }
     
     public List<Usuario> buscarPorNombres(String nombre){

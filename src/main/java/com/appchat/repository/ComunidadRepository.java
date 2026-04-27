@@ -4,7 +4,9 @@ package com.appchat.repository;
 import com.appchat.model.Comunidad;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.enterprise.context.ApplicationScoped;
 
+@ApplicationScoped
 public class ComunidadRepository {
 
     @PersistenceContext(unitName = "appchatPU") 

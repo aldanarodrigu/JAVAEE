@@ -44,7 +44,7 @@ public class UsuarioService{
 
     @Transactional
     public List<UsuarioResponseDTO> listarUsuarios() {
-        return repository.listarUsuarios().stream()
+        return repository.listarUsuariosActivos().stream()
                 .map(this::mapearUsuario)
                 .collect(Collectors.toList());
     }
