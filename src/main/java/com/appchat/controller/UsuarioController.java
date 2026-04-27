@@ -40,6 +40,19 @@ public class UsuarioController {
     }
 
     @GET
+    @Path("/buscar")
+    public Response buscarUsuarios(@QueryParam("q") String q) {
+        if (q == null || q.trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Debe indicar un texto de búsqueda")
+                    .build();
+        }
+
+        List<UsuarioResponseDTO> usuarios = service.buscarUsuarios(q);
+        return Response.ok(usuarios).build();
+    }
+
+    @GET
     @Path("/{id}")
     public Response obtenerUsuario(@PathParam("id") Long id) {
         UsuarioResponseDTO usuario = service.obtenerUsuarioPorId(id);

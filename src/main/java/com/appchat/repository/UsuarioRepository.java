@@ -29,7 +29,18 @@ public class UsuarioRepository {
             return null;
         }
     }
-    
+
+    public List<Usuario> buscarPorNombreOEmail(String q) {
+        return em.createQuery(
+                        "SELECT u FROM Usuario u " +
+                                "WHERE LOWER(u.nombre) LIKE LOWER(:q) " +
+                                "OR LOWER(u.email) LIKE LOWER(:q)",
+                        Usuario.class
+                )
+                .setParameter("q", "%" + q + "%")
+                .getResultList();
+    }
+
     public void eliminar(Long id){
         Usuario usuario = em.find(Usuario.class, id);
         if(usuario != null){
@@ -60,13 +71,7 @@ public class UsuarioRepository {
                 .setParameter("estado", EstadoUsuario.INVISIBLE)
                 .getResultList();
     }
-    
-    public List<Usuario> buscarPorNombres(String nombre){
-        return em.createQuery("SELECT u FROM Usuario u WHERE u.nombre LIKE :nombre", Usuario.class)
-                .setParameter("nombre", "%" + nombre + "%")
-                .getResultList();
-    }
-    
+
     public Usuario buscarPorId(Long id){
         return em.find(Usuario.class, id);
     }
