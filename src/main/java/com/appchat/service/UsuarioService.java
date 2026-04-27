@@ -128,5 +128,26 @@ public class UsuarioService{
 
         return mapearUsuario(actualizado);
     }
+    
+    @Transactional
+    public UsuarioResponseDTO actualizarEstado(Long id, String estadoStr) {
+
+        Usuario usuario = repository.buscarPorId(id);
+
+        if (usuario == null) {
+            return null;
+        }
+
+        try {
+            EstadoUsuario estado = EstadoUsuario.valueOf(estadoStr.toUpperCase());
+            usuario.setEstado(estado);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Estado inválido");
+        }
+
+        repository.actualizar(usuario);
+
+        return mapearUsuario(usuario);
+    }
 
 }
