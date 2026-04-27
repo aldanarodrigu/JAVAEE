@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import com.appchat.dto.ActualizarUsuarioDTO;
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -26,11 +27,11 @@ public class UsuarioService{
     public Usuario crearUsuario(UsuarioDTO usuarioDto) {
 
         validarPassword(usuarioDto.getPassword());
-        
+
         if (repository.buscarPorEmail(usuarioDto.getEmail()) != null) {
             throw new IllegalArgumentException("El email ya está registrado");
         }
-        
+
         Usuario usuario = new Usuario();
         usuario.setNombre(usuarioDto.getNombre());
         usuario.setApellido(usuarioDto.getApellido());
@@ -41,9 +42,9 @@ public class UsuarioService{
         String hashed = BCrypt.hashpw(usuarioDto.getPassword(), BCrypt.gensalt());
         usuario.setPassword(hashed);
         usuario.setEstado(EstadoUsuario.INVISIBLE);
-        
+
         repository.guardar(usuario); // LLAMAS AL REPOSITORIO DE USUARIO, ACA NO PODES DIRECTAMENTE CON LA BD!!
-        
+
         return usuario;
     }
 
@@ -80,7 +81,7 @@ public class UsuarioService{
         dto.setEstado(usuario.getEstado());
         return dto;
     }
-    
+
     public Usuario obtenerPorEmail(String email) {
         return repository.buscarPorEmail(email);
     }
@@ -90,11 +91,11 @@ public class UsuarioService{
             throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres, una mayúscula y un número");
         }
     }
-    
+
     public Usuario obtenerPorId(Long id){
         return repository.buscarPorId(id);
     }
-    
+
     public boolean existeusuario(Long id){
         return repository.existeUsuario(id);
     }
@@ -102,5 +103,30 @@ public class UsuarioService{
     Usuario buscarPorUsername(String username) {
         return repository.buscarPorUsername(username);
     }
-    
+
+    @Transactional
+    public UsuarioResponseDTO actualizarUsuario(Long id, ActualizarUsuarioDTO dto) {
+        Usuario usuario = repository.buscarPorId(id);
+
+        if (usuario == null) {
+            return null;
+        }
+
+        if (dto.getNombre() != null) {
+            usuario.setNombre(dto.getNombre());
+        }
+
+        if (dto.getApellido() != null) {
+            usuario.setApellido(dto.getApellido());
+        }
+
+        if (dto.getFotoPerfil() != null) {
+            usuario.setFotoPerfil(dto.getFotoPerfil());
+        }
+
+        Usuario actualizado = repository.actualizar(usuario);
+
+        return mapearUsuario(actualizado);
+    }
+
 }

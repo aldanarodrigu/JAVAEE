@@ -10,6 +10,7 @@ public class UsuarioDTO{
     private String userName;
     private String password;
     private EstadoUsuario estado;
+    private String fotoPerfil;
 
     public String getNombre(){ 
         return nombre; 
@@ -59,6 +60,9 @@ public class UsuarioDTO{
         this.estado = estado;
     }
 
-    
+    public String getFotoPerfil() { return fotoPerfil; }
+
+    public void setFotoPerfil(String fotoPerfil) { this.fotoPerfil = fotoPerfil;}
+
     
 }
