@@ -32,6 +32,9 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private EstadoUsuario estado;
 
+    @Column(name = "foto_perfil")
+    private String fotoPerfil;
+
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
     private List<Participa> participaciones = new ArrayList<>(); //estas son las participaciones de chat tanto grupales como directos
     
@@ -108,6 +111,14 @@ public class Usuario {
 
     public void setComunidades(List<MiembroComunidad> comunidades) {
         this.comunidades = comunidades;
+    }
+
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
     }
 
 }

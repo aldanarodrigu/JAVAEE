@@ -54,13 +54,14 @@ public class AuthController {
         } catch (SecurityException e) {
             return Response.status(Response.Status.FORBIDDEN).entity(Collections.singletonMap("error", e.getMessage())).build();
 
-    } catch (IllegalArgumentException e) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity("{\"error\": \"" + e.getMessage() + "\"}")
-                .build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                    .build();
 
-    } catch (Exception e) {
-        e.printStackTrace();
-        return Response.status(500).entity("Error interno").build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(500).entity("Error interno").build();
+        }
     }
 }    
