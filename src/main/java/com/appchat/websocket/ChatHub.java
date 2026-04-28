@@ -58,4 +58,9 @@ public class ChatHub {
     public int cantidadSesiones() {
         return sesiones.values().stream().mapToInt(Set::size).sum();
     }
+    
+    public boolean estaConectado(Long userId) {
+        Set<Session> sessions = sesiones.get(userId);
+        return sessions != null && !sessions.isEmpty();
+    }
 }

@@ -26,9 +26,7 @@ public class ChatEndpoint {
     public static class Config extends ServerEndpointConfig.Configurator {
 
         @Override
-        public void modifyHandshake(ServerEndpointConfig config,
-                                    HandshakeRequest request,
-                                    HandshakeResponse response) {
+        public void modifyHandshake(ServerEndpointConfig config, HandshakeRequest request, HandshakeResponse response) {
             try {
                 String query = request.getQueryString();
 
@@ -49,8 +47,7 @@ public class ChatEndpoint {
                 }
 
             } catch (Exception e) {
-                Logger.getLogger(Config.class.getName())
-                        .warning("Token inválido en handshake: " + e.getMessage());
+                Logger.getLogger(Config.class.getName()).warning("Token inválido en handshake: " + e.getMessage());
             }
         }
     }
@@ -63,10 +60,7 @@ public class ChatEndpoint {
 
         if (userId == null) {
             try {
-                session.close(new CloseReason(
-                        CloseReason.CloseCodes.VIOLATED_POLICY,
-                        "No autorizado"
-                ));
+                session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "No autorizado"));
             } catch (IOException e) {
                 log.log(Level.WARNING, "Error cerrando sesión no autorizada", e);
             }
@@ -80,36 +74,42 @@ public class ChatEndpoint {
         try {
             chatService.marcarMensajesPendientesAlConectar(userId);
         } catch (Exception e) {
-            log.log(Level.WARNING,
-                    "No se pudieron marcar como entregados mensajes pendientes al conectar usuario " + userId, e);
+            log.log(Level.WARNING, "No se pudieron marcar como entregados mensajes pendientes al conectar usuario " + userId, e);
         }
 
-        log.info("Usuario " + userId + " conectado. Sesiones activas: "
-                + chatHub.cantidadSesiones());
+        log.info("Usuario " + userId + " conectado. Sesiones activas: " + chatHub.cantidadSesiones());
     }
 
     @OnMessage
     public void onMessage(String message, Session session) {
-        
+
         Long userId = (Long) session.getUserProperties().get("userId");
-        
-        if(message == null){
-            enviarError(session, "INVALID_MESSAGE", "El mensaje no puede estar vacio");
+
+        if (message == null || message.isBlank()) {
+            enviarError(session, "INVALID_MESSAGE", "El mensaje no puede estar vacío");
             return;
         }
-        
+
         try {
             chatService.procesarMensajeWebSocket(userId, message);
 
-        } catch (IllegalArgumentException e) {
-            enviarError(session, "INVALID_MESSAGE", e.getMessage());
+        } catch (jakarta.ws.rs.BadRequestException e) {
+            enviarError(session, "BAD_REQUEST", e.getMessage());
+
+        } catch (jakarta.ws.rs.NotFoundException e) {
+            enviarError(session, "NOT_FOUND", e.getMessage());
+
+        } catch (jakarta.ws.rs.ForbiddenException e) {
+            enviarError(session, "FORBIDDEN", e.getMessage());
+
+        } catch (jakarta.ws.rs.NotAuthorizedException e) {
+            enviarError(session, "UNAUTHORIZED", e.getMessage());
 
         } catch (jakarta.ws.rs.WebApplicationException e) {
-            enviarError(session, "ERROR", "Chat no encontrado o sin permiso");
+            enviarError(session, "ERROR", "Error de aplicación");
 
         } catch (Exception e) {
-            log.log(Level.SEVERE,
-                    "Error procesando mensaje de usuario " + userId, e);
+            log.log(Level.SEVERE, "Error procesando mensaje de usuario " + userId, e);
 
             enviarError(session, "SERVER_ERROR", "Error interno");
         }
@@ -122,8 +122,7 @@ public class ChatEndpoint {
         
         if (userId != null) {
             chatHub.remover(userId, session);
-            log.info("Usuario " + userId + " desconectado: "
-                    + reason.getReasonPhrase());
+            log.info("Usuario " + userId + " desconectado: " + reason.getReasonPhrase());
         }
     }
 

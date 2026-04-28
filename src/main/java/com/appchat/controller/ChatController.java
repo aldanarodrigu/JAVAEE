@@ -26,7 +26,6 @@ public class ChatController {
 
     @GET
     public Response listarChats() {
-
         Long usuarioId = getUsuarioId();
 
         List<ChatResumenDTO> chats = service.listarChatsDelUsuario(usuarioId);
@@ -36,10 +35,7 @@ public class ChatController {
 
     @GET
     @Path("/{id}/mensajes")
-    public Response historialMensajes(@PathParam("id") Long chatId,
-                                      @QueryParam("page") @DefaultValue("0") int page,
-                                      @QueryParam("size") @DefaultValue("20") int size) {
-
+    public Response historialMensajes(@PathParam("id") Long chatId, @QueryParam("page") @DefaultValue("0") int page, @QueryParam("size") @DefaultValue("20") int size) {
         Long usuarioId = getUsuarioId();
 
         HistorialMensajesDTO historial = service.obtenerHistorialMensajes(chatId, usuarioId, page, size);
@@ -49,7 +45,6 @@ public class ChatController {
 
     @POST
     public Response crearOAbrirChatDirecto(@Valid ChatDirectoRequestDTO request) {
-
         Long usuarioId = getUsuarioId();
 
         ChatResumenDTO chat = service.crearOAbrirChatDirecto(usuarioId, request.getUsuarioDestinoId(), request.getComunidadId());
@@ -58,7 +53,6 @@ public class ChatController {
     }
 
     private Long getUsuarioId() {
-
         Object userIdObj = requestContext.getProperty("userId");
 
         if (userIdObj == null) {

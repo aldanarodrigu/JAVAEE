@@ -1,7 +1,10 @@
 package com.appchat.dto;
 
-public class ActualizarEstadoDTO {
+import jakarta.validation.constraints.NotBlank;
 
+public class ActualizarEstadoDTO {
+    
+    @NotBlank
     private String estado;
 
     public ActualizarEstadoDTO() {

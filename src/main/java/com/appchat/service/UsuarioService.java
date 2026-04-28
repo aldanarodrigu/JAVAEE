@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import com.appchat.dto.ActualizarUsuarioDTO;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -29,7 +31,7 @@ public class UsuarioService{
         validarPassword(usuarioDto.getPassword());
 
         if (repository.buscarPorEmail(usuarioDto.getEmail()) != null) {
-            throw new IllegalArgumentException("El email ya está registrado");
+            throw new BadRequestException("El email ya está registrado");
         }
 
         Usuario usuario = new Usuario();
@@ -50,7 +52,7 @@ public class UsuarioService{
 
     @Transactional
     public List<UsuarioResponseDTO> listarUsuarios() {
-        return repository.listarUsuariosActivos().stream()
+        return repository.listarUsuarios().stream()
                 .map(this::mapearUsuario)
                 .collect(Collectors.toList());
     }
@@ -59,7 +61,7 @@ public class UsuarioService{
     public UsuarioResponseDTO obtenerUsuarioPorId(Long id) {
         Usuario usuario = repository.buscarPorId(id);
         if (usuario == null) {
-            return null;
+            throw new NotFoundException("Usuario no econtrado.");
         }
 
         return mapearUsuario(usuario);
@@ -88,7 +90,7 @@ public class UsuarioService{
 
     private void validarPassword(String password) {
         if (password == null || !PASSWORD_PATTERN.matcher(password).matches()) {
-            throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres, una mayúscula y un número");
+            throw new BadRequestException("La contraseña debe tener al menos 8 caracteres, una mayúscula y un número");
         }
     }
 
@@ -96,7 +98,7 @@ public class UsuarioService{
         return repository.buscarPorId(id);
     }
 
-    public boolean existeusuario(Long id){
+    public boolean existeUsuario(Long id){
         return repository.existeUsuario(id);
     }
 
@@ -109,7 +111,7 @@ public class UsuarioService{
         Usuario usuario = repository.buscarPorId(id);
 
         if (usuario == null) {
-            return null;
+            throw new NotFoundException("Usuario no encontrado");
         }
 
         if (dto.getNombre() != null) {
@@ -135,14 +137,14 @@ public class UsuarioService{
         Usuario usuario = repository.buscarPorId(id);
 
         if (usuario == null) {
-            return null;
+            throw new NotFoundException("Usuario no encontrado");
         }
 
         try {
             EstadoUsuario estado = EstadoUsuario.valueOf(estadoStr.toUpperCase());
             usuario.setEstado(estado);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Estado inválido");
+            throw new BadRequestException("Estado inválido");
         }
 
         repository.actualizar(usuario);

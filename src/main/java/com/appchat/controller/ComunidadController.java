@@ -4,7 +4,6 @@ import com.appchat.dto.ComunidadDTO;
 import com.appchat.dto.InvitacionDTO;
 import com.appchat.model.Comunidad;
 import com.appchat.service.ComunidadService;
-
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -35,7 +34,7 @@ public class ComunidadController {
 
         Comunidad comunidad = comunidadService.crearComunidad(dto, userId);
 
-        return Response.status(Response.Status.CREATED).entity(comunidad).build();
+        return Response.ok().build();
     }
     
     @POST
