@@ -13,14 +13,19 @@ import com.appchat.model.enums.TipoChat;
 import com.appchat.model.enums.TipoMensaje;
 import com.appchat.repository.ChatRepository;
 import com.appchat.repository.UsuarioRepository;
-import com.appchat.util.JsonUtil;
 import com.appchat.websocket.ChatHub;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +44,8 @@ public class ChatService {
     
     @Inject
     private ComunidadService comunidadService;
+    
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     @Transactional
     public MensajeDTO enviarMensaje(Long chatId, Long emisorId, String contenido) {
@@ -46,7 +53,7 @@ public class ChatService {
         Chat chat = chatRepository.buscarChatPorId(chatId);
         
         if (chat == null) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new NotFoundException("Chat no existe.");
         }
 
         validarParticipacion(chat, emisorId);
@@ -54,7 +61,7 @@ public class ChatService {
         Usuario emisor = usuarioRepository.buscarPorId(emisorId);
 
         if (emisor == null) {
-        throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new NotFoundException("Usuario no existe.");
     }
 
         Mensaje mensaje = new Mensaje();
@@ -80,7 +87,12 @@ public class ChatService {
         List<Long> destinatarios = obtenerUsuariosDelChat(chat, dtoMensaje.getEmisorId());
         boolean entregado = false;
 
-        String json = JsonUtil.toJson(dtoMensaje);
+        String json;
+        try {
+            json = mapper.writeValueAsString(dtoMensaje);
+        } catch (Exception e) {
+            throw new RuntimeException("Error serializando mensaje", e);
+        }
 
         for (Long userId : destinatarios) {
             if (!chatHub.obtenerSesiones(userId).isEmpty()) {
@@ -94,7 +106,13 @@ public class ChatService {
             chatRepository.flush();
 
             MensajeDTO dtoEntregado = mapearMensaje(mensaje);
-            chatHub.enviarAUsuario(mensaje.getEmisor().getId(), JsonUtil.toJson(dtoEntregado));
+
+            try {
+                String jsonEntregado = mapper.writeValueAsString(dtoEntregado);
+                chatHub.enviarAUsuario(mensaje.getEmisor().getId(), jsonEntregado);
+            } catch (Exception e) {
+                throw new RuntimeException("Error serializando mensaje", e);
+            }
         }
     }
     
@@ -120,7 +138,7 @@ public class ChatService {
     public HistorialMensajesDTO obtenerHistorialMensajes(Long chatId, Long usuarioId, int page, int size) {
         Chat chat = chatRepository.buscarChatPorId(chatId);
         if (chat == null) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new NotFoundException("Chat no existe.");
         }
         validarParticipacion(chat, usuarioId);
 
@@ -144,7 +162,7 @@ public class ChatService {
     public ChatResumenDTO crearOAbrirChatDirecto(Long usuarioAutenticadoId, Long usuarioDestinoId, Long comunidadId) {
         
         if (usuarioAutenticadoId.equals(usuarioDestinoId)) {
-            throw new IllegalArgumentException("No se puede crear un chat directo contigo mismo");
+            throw new ForbiddenException("No se puede crear un chat directo contigo mismo");
         }
 
         Usuario usuarioAutenticado = verificarUsuarioExiste(usuarioAutenticadoId);
@@ -152,12 +170,12 @@ public class ChatService {
 
         Comunidad comunidad = comunidadService.buscarPorId(comunidadId);
         if(comunidad == null){
-            throw new WebApplicationException("Comunidad no existe", 404);
+            throw new NotFoundException("Comunidad no existe");
         }
         
         if (!comunidadService.sonMiembros(comunidadId, usuarioAutenticadoId, usuarioDestinoId)) {
-        throw new WebApplicationException("Ambos usuarios deben pertenecer a la comunidad", 403);
-    }
+            throw new ForbiddenException("Ambos usuarios deben pertenecer a la comunidad");
+        }
         
         Chat chatExistente = chatRepository.buscarChatDirectoEntreUsuarios(usuarioAutenticadoId, usuarioDestinoId, comunidadId);
         if (chatExistente != null) {
@@ -177,11 +195,13 @@ public class ChatService {
     }
 
     public Usuario resolverUsuarioAutenticado(String principal) {
+
         if (principal == null || principal.isBlank()) {
-            throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+            throw new NotAuthorizedException("No autorizado");
         }
 
         Usuario usuario = null;
+
         try {
             usuario = usuarioRepository.buscarPorId(Long.valueOf(principal));
         } catch (NumberFormatException ignored) {
@@ -192,7 +212,7 @@ public class ChatService {
         }
 
         if (usuario == null) {
-            throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+            throw new NotAuthorizedException("No autorizado");
         }
 
         return usuario;
@@ -201,14 +221,14 @@ public class ChatService {
     private Usuario verificarUsuarioExiste(Long usuarioId) {
         Usuario usuario = usuarioRepository.buscarPorId(usuarioId);
         if (usuario == null) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new NotFoundException("Usuario no existe.");
         }
         return usuario;
     }
 
     private void validarParticipacion(Chat chat, Long usuarioId) {
         if (!chat.esParticipante(usuarioId)) {
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
+            throw new ForbiddenException("Debe ser participante de la comunidad.");
         }
     }
 
@@ -284,53 +304,62 @@ public class ChatService {
 
     public void procesarMensajeWebSocket(Long userId, String message) {
 
-        MensajeWSDTO dto = JsonUtil.fromJson(message, MensajeWSDTO.class);
-
-        if (dto == null) {
-            throw new IllegalArgumentException("Mensaje inválido");
-        }
-
-        if (esAcuseLecturaPorChat(dto)) {
-            if (dto.getChatId() == null) {
-                throw new IllegalArgumentException("Mensaje inválido");
-            }
-
-            marcarChatComoLeidoDesdeWebSocket(userId, dto.getChatId());
-            return;
-        }
-
-        if (esAcuseLecturaPorMensaje(dto)) {
-            if (dto.getMensajeId() == null) {
-                throw new IllegalArgumentException("Mensaje inválido");
-            }
-
-            marcarMensajeLeidoDesdeWebSocket(userId, dto.getMensajeId(), dto.getChatId());
-            return;
-        }
-
-        if (esAcuseLectura(dto)) {
-            if (dto.getMensajeId() == null && dto.getChatId() == null) {
-                throw new IllegalArgumentException("Mensaje inválido");
-            }
-
-            if (dto.getChatId() != null) {
-                marcarChatComoLeidoDesdeWebSocket(userId, dto.getChatId());
-            } else {
-                marcarMensajeLeidoDesdeWebSocket(userId, dto.getMensajeId(), null);
-            }
-            return;
-        }
-
-        if (dto.getChatId() == null || dto.getContenido() == null) {
-            throw new IllegalArgumentException("Mensaje inválido");
-        }
-
-        enviarMensaje(
-            dto.getChatId(),
-            userId,
-            dto.getContenido()
-        );
+    if (message == null || message.isBlank()) {
+        throw new BadRequestException("Mensaje vacío");
     }
+
+    MensajeWSDTO dto;
+    try {
+        dto = mapper.readValue(message, MensajeWSDTO.class);
+    } catch (Exception e) {
+        throw new BadRequestException("Formato de mensaje inválido");
+    }
+
+    if (esAcuseLecturaPorChat(dto)) {
+        if (dto.getChatId() == null) {
+            throw new BadRequestException("chatId requerido");
+        }
+
+        marcarChatComoLeidoDesdeWebSocket(userId, dto.getChatId());
+        return;
+    }
+
+    if (esAcuseLecturaPorMensaje(dto)) {
+        if (dto.getMensajeId() == null) {
+            throw new BadRequestException("mensajeId requerido");
+        }
+
+        marcarMensajeLeidoDesdeWebSocket(userId, dto.getMensajeId(), dto.getChatId());
+        return;
+    }
+
+    if (esAcuseLectura(dto)) {
+        if (dto.getMensajeId() == null && dto.getChatId() == null) {
+            throw new BadRequestException("mensajeId o chatId requerido");
+        }
+
+        if (dto.getChatId() != null) {
+            marcarChatComoLeidoDesdeWebSocket(userId, dto.getChatId());
+        } else {
+            marcarMensajeLeidoDesdeWebSocket(userId, dto.getMensajeId(), null);
+        }
+        return;
+    }
+
+    if (dto.getChatId() == null) {
+        throw new BadRequestException("chatId requerido");
+    }
+
+    if (dto.getContenido() == null || dto.getContenido().isBlank()) {
+        throw new BadRequestException("contenido requerido");
+    }
+
+    enviarMensaje(
+        dto.getChatId(),
+        userId,
+        dto.getContenido()
+    );
+}
 
     @Transactional
     public MensajeDTO marcarMensajeLeidoDesdeWebSocket(Long usuarioId, Long mensajeId, Long chatId) {
@@ -356,7 +385,13 @@ public class ChatService {
         }
 
         MensajeDTO dto = mapearMensaje(mensaje);
-        chatHub.enviarAUsuario(mensaje.getEmisor().getId(), JsonUtil.toJson(dto));
+        
+        try {
+            String json = mapper.writeValueAsString(dto);
+            chatHub.enviarAUsuario(mensaje.getEmisor().getId(), json);
+        } catch (Exception e) {
+            throw new RuntimeException("Error serializando mensaje", e);
+        }
 
         return dto;
     }
@@ -385,7 +420,12 @@ public class ChatService {
         chatRepository.flush();
 
         for (MensajeDTO dto : actualizados) {
-            chatHub.enviarAUsuario(dto.getEmisorId(), JsonUtil.toJson(dto));
+            try {
+                String json = mapper.writeValueAsString(dto);
+                chatHub.enviarAUsuario(dto.getEmisorId(), json);
+            } catch (Exception e) {
+                throw new RuntimeException("Error serializando mensaje", e);
+            }
         }
     }
 
@@ -416,7 +456,12 @@ public class ChatService {
         chatRepository.flush();
 
         for (MensajeDTO dto : actualizados) {
-            chatHub.enviarAUsuario(dto.getEmisorId(), JsonUtil.toJson(dto));
+            try {
+                String json = mapper.writeValueAsString(dto);
+                chatHub.enviarAUsuario(dto.getEmisorId(), json);
+            } catch (Exception e) {
+                throw new RuntimeException("Error serializando mensaje", e);
+            }
         }
     }
 

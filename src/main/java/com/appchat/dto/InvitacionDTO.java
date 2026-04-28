@@ -1,7 +1,10 @@
 package com.appchat.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class InvitacionDTO {
     
+    @NotBlank
     private String username;
 
     public String getUsername() {

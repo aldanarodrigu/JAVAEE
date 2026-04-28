@@ -1,8 +1,13 @@
 package com.appchat.dto;
 
-public class ChatDirectoRequestDTO {
+import jakarta.validation.constraints.NotNull;
 
+public class ChatDirectoRequestDTO {
+    
+    @NotNull
     private Long usuarioDestinoId;
+    
+    @NotNull
     private Long comunidadId;
 
     public Long getUsuarioDestinoId() {

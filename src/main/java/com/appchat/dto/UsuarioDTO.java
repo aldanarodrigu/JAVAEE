@@ -1,15 +1,27 @@
 package com.appchat.dto;
 
 import com.appchat.model.enums.EstadoUsuario;
+import jakarta.validation.constraints.NotBlank;
 
 public class UsuarioDTO{
-
+    
+    @NotBlank
     private String nombre;
+    
+    @NotBlank
     private String apellido;
+    
+    @NotBlank
     private String email;
+    
+    @NotBlank
     private String userName;
+    
+    @NotBlank
     private String password;
+    
     private EstadoUsuario estado;
+    
     private String fotoPerfil;
 
     public String getNombre(){ 

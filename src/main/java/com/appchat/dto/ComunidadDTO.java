@@ -1,11 +1,20 @@
 package com.appchat.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 public class ComunidadDTO {
+    
+    @NotBlank
     private String nombre;
+    
+    @NotBlank
     private String descripcion;
+    
+    @NotBlank
     private String fotoUrl;
+    
+    @NotBlank
     private LocalDateTime fechaCreacion;  
 
     public String getNombre() {

@@ -1,9 +1,16 @@
 package com.appchat.dto;
 
-public class ActualizarUsuarioDTO {
+import jakarta.validation.constraints.NotBlank;
 
+public class ActualizarUsuarioDTO {
+    
+    @NotBlank
     private String nombre;
+    
+    @NotBlank
     private String apellido;
+    
+    @NotBlank
     private String fotoPerfil;
 
     public String getNombre() {

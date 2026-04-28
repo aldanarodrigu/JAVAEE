@@ -1,13 +1,15 @@
 package com.appchat.controller;
 
-import com.appchat.dto.UsuarioDTO;
 import com.appchat.dto.UsuarioResponseDTO;
-import com.appchat.model.Usuario;
 import com.appchat.dto.ActualizarUsuarioDTO;
 import com.appchat.dto.ActualizarEstadoDTO;
 import com.appchat.service.UsuarioService;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
@@ -20,21 +22,9 @@ public class UsuarioController {
     @Inject
     private UsuarioService service;
 
-    @POST
-    public Response crearUsuario(UsuarioDTO dto) {
-        try {
-            Usuario nuevo = service.crearUsuario(dto);
-
-            UsuarioResponseDTO response = new UsuarioResponseDTO();
-            response.setId(nuevo.getId());
-
-            return Response.status(Response.Status.CREATED).entity(response).build();
-
-        } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
-        }
-    }
-
+    @Context
+    private ContainerRequestContext requestContext;
+    
     @GET
     public Response listarUsuarios() {
         List<UsuarioResponseDTO> usuarios = service.listarUsuarios();
@@ -43,13 +33,7 @@ public class UsuarioController {
 
     @GET
     @Path("/buscar")
-    public Response buscarUsuarios(@QueryParam("q") String q) {
-        if (q == null || q.trim().isEmpty()) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Debe indicar un texto de búsqueda")
-                    .build();
-        }
-
+    public Response buscarUsuarios(@QueryParam("q") @NotBlank String q) {
         List<UsuarioResponseDTO> usuarios = service.buscarUsuarios(q);
         return Response.ok(usuarios).build();
     }
@@ -68,13 +52,11 @@ public class UsuarioController {
 
     @PUT
     @Path("/{id}")
-    public Response actualizarUsuario(@PathParam("id") Long id, ActualizarUsuarioDTO dto) {
+    public Response actualizarUsuario(@PathParam("id") Long id, @Valid ActualizarUsuarioDTO dto) {
         UsuarioResponseDTO usuarioActualizado = service.actualizarUsuario(id, dto);
 
         if (usuarioActualizado == null) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Usuario no encontrado")
-                    .build();
+            return Response.status(Response.Status.NOT_FOUND).entity("Usuario no encontrado").build();
         }
 
         return Response.ok(usuarioActualizado).build();
@@ -82,15 +64,22 @@ public class UsuarioController {
 
     @PUT
     @Path("/{id}/estado")
-    public Response actualizarEstado(@PathParam("id") Long id, ActualizarEstadoDTO dto) {
-        UsuarioResponseDTO usuario = service.actualizarEstado(id, dto.getEstado());
-
-        if (usuario == null) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Usuario no encontrado")
-                    .build();
+    public Response actualizarEstado(@PathParam("id") Long id, @Valid ActualizarEstadoDTO dto) {
+        
+        Long userIdAutenticado = (Long) requestContext.getProperty("userId");
+        
+        UsuarioResponseDTO usuarioAEditar = service.obtenerUsuarioPorId(id);
+        
+        if (usuarioAEditar == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Usuario no encontrado").build();
         }
-
+        
+        if (!usuarioAEditar.getId().equals(userIdAutenticado)) {
+            return Response.status(Response.Status.FORBIDDEN).entity("No tienes permiso para modificar el estado de otro usuario").build();
+        }
+        
+        UsuarioResponseDTO usuario = service.actualizarEstado(id, dto.getEstado());
+       
         return Response.ok(usuario).build();
     }
 }

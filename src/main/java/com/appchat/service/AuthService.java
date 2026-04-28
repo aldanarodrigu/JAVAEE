@@ -6,6 +6,9 @@ import com.appchat.repository.UsuarioRepository;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -19,26 +22,24 @@ public class AuthService {
     private UsuarioService usuarioService;
 
     public Usuario login(String email, String password) {
-
         Usuario u = repository.buscarPorEmail(email);
 
         if (u == null) {
-            throw new IllegalArgumentException("Usuario no existe");
+            throw new NotFoundException("Usuario no existe");
         }
 
         if (!BCrypt.checkpw(password, u.getPassword())) {
-            throw new IllegalArgumentException("Password incorrecta");
+            throw new ForbiddenException("Password incorrecta");
         }
-
+        
         return u;
     }
     
     public Usuario registrarUsuario(String email, UsuarioDTO dto) {
-
         Usuario solicitante = repository.buscarPorEmail(email);
 
         if (solicitante != null) {
-            throw new SecurityException("Email ya registrado.");
+            throw new BadRequestException("Email ya registrado.");
         }
 
         return usuarioService.crearUsuario(dto);

@@ -9,8 +9,11 @@ import com.appchat.repository.ComunidadRepository;
 import jakarta.inject.Inject;
 
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.WebApplicationException;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class ComunidadService {
@@ -50,17 +53,17 @@ public class ComunidadService {
         Comunidad comunidad = comunidadRepository.buscarPorId(comunidadId);
         
         if(!comunidad.esAdmin(ownerId)){
-            throw new WebApplicationException("No Autorizado", 403);
+            throw new ForbiddenException("No Autorizado");
         }
         
         Usuario u = usuarioService.buscarPorUsername(username);
         
         if(u == null){
-            throw new WebApplicationException("Usuario no existe", 404);
+            throw new NotFoundException("Usuario no existe.");
         }
         
         if(comunidad.esMiembro(u.getId())){
-            throw new WebApplicationException("Ya es miembro", 409);
+            throw new ClientErrorException("Ya es miembro", Response.Status.CONFLICT);
         }
            
         //Aca crear una InitacionAComunidad con estado pendiente asi despues el usuario puede aceptar
