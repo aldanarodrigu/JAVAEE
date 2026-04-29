@@ -37,7 +37,7 @@ public class ComunidadController {
 
         Comunidad comunidad = comunidadService.crearComunidad(dto, userId);
 
-        return Response.ok().build();
+        return Response.status(Response.Status.CREATED).build();
     }
     
     @POST
