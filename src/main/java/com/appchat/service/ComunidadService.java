@@ -1,6 +1,7 @@
 package com.appchat.service;
 
 import com.appchat.dto.ComunidadDTO;
+import com.appchat.dto.UsuarioResponseDTO;
 import com.appchat.model.Comunidad;
 import com.appchat.model.Usuario;
 import com.appchat.model.enums.RolComunidad;
@@ -14,6 +15,8 @@ import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
 
 @ApplicationScoped
 public class ComunidadService {
@@ -68,6 +71,22 @@ public class ComunidadService {
            
         //Aca crear una InitacionAComunidad con estado pendiente asi despues el usuario puede aceptar
         
+    }
+    
+    public List<UsuarioResponseDTO> listarMiembros(Long comunidadId){
+        List<Usuario> miembros = comunidadRepository.listarMiembros(comunidadId);
+        
+        if(miembros.isEmpty()){
+            throw new NotFoundException("No se encontraron miembros.");
+        }
+        
+        List<UsuarioResponseDTO> miembrosComunidad = new ArrayList<>();
+        
+        for(Usuario u : miembros){
+            miembrosComunidad.add(usuarioService.mapearUsuario(u));   
+        }
+        
+        return miembrosComunidad;
     }
     
 }

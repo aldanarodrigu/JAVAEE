@@ -74,7 +74,7 @@ public class UsuarioService{
                 .collect(Collectors.toList());
     }
 
-    private UsuarioResponseDTO mapearUsuario(Usuario usuario) {
+    public UsuarioResponseDTO mapearUsuario(Usuario usuario) {
         UsuarioResponseDTO dto = new UsuarioResponseDTO();
         dto.setId(usuario.getId());
         dto.setNombre(usuario.getNombre());

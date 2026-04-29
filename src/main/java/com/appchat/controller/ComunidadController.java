@@ -2,11 +2,13 @@ package com.appchat.controller;
 
 import com.appchat.dto.ComunidadDTO;
 import com.appchat.dto.InvitacionDTO;
+import com.appchat.dto.UsuarioResponseDTO;
 import com.appchat.model.Comunidad;
 import com.appchat.service.ComunidadService;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -15,6 +17,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.List;
 
 @Path("/comunidades")
 @Produces(MediaType.APPLICATION_JSON) 
@@ -46,6 +49,13 @@ public class ComunidadController {
         comunidadService.invitarUsuario(comunidadId, invitacion.getUsername(), ownerId);
         
         return Response.ok("Invitacion Enviada").build();
+    }
+    
+    @GET
+    @Path("/miembros")
+    public Response listarMimebros(@PathParam("id") Long comunidadId){
+        List<UsuarioResponseDTO> miembros = comunidadService.listarMiembros(comunidadId);
+        return Response.ok(miembros).build();
     }
     
 }

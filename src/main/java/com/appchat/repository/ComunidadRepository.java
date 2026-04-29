@@ -1,10 +1,13 @@
 
 package com.appchat.repository;
 
+import com.appchat.dto.UsuarioResponseDTO;
 import com.appchat.model.Comunidad;
+import com.appchat.model.Usuario;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.enterprise.context.ApplicationScoped;
+import java.util.List;
 
 @ApplicationScoped
 public class ComunidadRepository {
@@ -33,6 +36,17 @@ public class ComunidadRepository {
 
     public void guardar(Comunidad comunidadNueva) {
         em.persist(comunidadNueva);
+    }
+
+    public List<Usuario> listarMiembros(Long comunidadId) {
+        List<Usuario> usuarios = em.createQuery(
+            "SELECT u FROM MiembroComunidad mc JOIN mc.usuario u WHERE mc.comunidad.id = :comunidadId",
+            Usuario.class
+        )
+        .setParameter("comunidadId", comunidadId)
+        .getResultList();
+        
+        return usuarios;
     }
     
 }
