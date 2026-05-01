@@ -6,6 +6,7 @@ import com.appchat.model.Comunidad;
 import com.appchat.model.Usuario;
 import com.appchat.model.enums.RolComunidad;
 import com.appchat.repository.ComunidadRepository;
+import com.appchat.dto.ComunidadResumenDTO;
 
 import jakarta.inject.Inject;
 
@@ -88,5 +89,16 @@ public class ComunidadService {
         
         return miembrosComunidad;
     }
+    
+   public List<ComunidadResumenDTO> listarComunidadesDelUsuario(Long userId) {
+    List<Comunidad> comunidades = comunidadRepository.listarPorUsuario(userId);
+    List<ComunidadResumenDTO> resultado = new ArrayList<>();
+    for (Comunidad c : comunidades) {
+        resultado.add(new ComunidadResumenDTO(
+            c.getId(), c.getNombre(), c.getDescripcion(), c.getFotoUrl()
+        ));
+    }
+    return resultado;
+}
     
 }

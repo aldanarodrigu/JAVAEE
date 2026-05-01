@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import com.appchat.dto.ComunidadResumenDTO;
 
 @Path("/comunidades")
 @Produces(MediaType.APPLICATION_JSON) 
@@ -57,5 +58,12 @@ public class ComunidadController {
         List<UsuarioResponseDTO> miembros = comunidadService.listarMiembros(comunidadId);
         return Response.ok(miembros).build();
     }
+    
+    @GET
+public Response listarComunidades() {
+    Long userId = (Long) requestContext.getProperty("userId");
+    List<ComunidadResumenDTO> comunidades = comunidadService.listarComunidadesDelUsuario(userId);
+    return Response.ok(comunidades).build();
+}
     
 }
