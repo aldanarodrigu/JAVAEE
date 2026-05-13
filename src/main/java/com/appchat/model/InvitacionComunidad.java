@@ -20,5 +20,44 @@ public class InvitacionComunidad {
 
     @Enumerated(EnumType.STRING)
     private EstadoInvitacion estado;
-    
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getComunidadId() {
+        return comunidadId;
+    }
+
+    public void setComunidadId(Long comunidadId) {
+        this.comunidadId = comunidadId;
+    }
+
+    public Long getUsuarioInvitadoId() {
+        return usuarioInvitadoId;
+    }
+
+    public void setUsuarioInvitadoId(Long usuarioInvitadoId) {
+        this.usuarioInvitadoId = usuarioInvitadoId;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public EstadoInvitacion getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoInvitacion estado) {
+        this.estado = estado;
+    }  
 }
