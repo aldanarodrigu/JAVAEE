@@ -8,8 +8,9 @@ import com.appchat.model.enums.RolComunidad;
 import com.appchat.repository.ComunidadRepository;
 import com.appchat.dto.ComunidadResumenDTO;
 import com.appchat.dto.ComunidadDetalleDTO;
-
-
+import com.appchat.model.InvitacionComunidad;
+import com.appchat.model.enums.EstadoInvitacion;
+import com.appchat.repository.InvitacionRepository;
 
 import jakarta.inject.Inject;
 
@@ -30,6 +31,9 @@ public class ComunidadService {
     
     @Inject 
     private UsuarioService usuarioService;
+    
+    @Inject 
+    private InvitacionRepository inivtacionRepository;
 
     Comunidad buscarPorId(Long comunidadId) {
         return comunidadRepository.buscarPorId(comunidadId);
@@ -103,6 +107,10 @@ public void eliminarComunidad(Long id, Long userId) {
         
         Comunidad comunidad = comunidadRepository.buscarPorId(comunidadId);
         
+        if(comunidad == null){
+            throw new NotFoundException("Comunidad no existe");
+        }
+        
         if(!comunidad.esAdmin(ownerId)){
             throw new ForbiddenException("No Autorizado");
         }
@@ -116,9 +124,20 @@ public void eliminarComunidad(Long id, Long userId) {
         if(comunidad.esMiembro(u.getId())){
             throw new ClientErrorException("Ya es miembro", Response.Status.CONFLICT);
         }
-           
-        //Aca crear una InitacionAComunidad con estado pendiente asi despues el usuario puede aceptar
         
+        boolean yaInvitado = inivtacionRepository.existeInvitacionPendiente(comunidadId, u.getId());
+        
+        if(yaInvitado){
+            throw new ClientErrorException("Ya tiene una invitacion pendiente", Response.Status.CONFLICT);
+        }
+                 
+        InvitacionComunidad invitacion = new InvitacionComunidad();
+        invitacion.setComunidadId(comunidadId);
+        invitacion.setOwnerId(ownerId);
+        invitacion.setEstado(EstadoInvitacion.PENDIENTE);
+        invitacion.setUsuarioInvitadoId(u.getId());
+        
+        inivtacionRepository.guardar(invitacion);
     }
     
     public List<UsuarioResponseDTO> listarMiembros(Long comunidadId){
