@@ -224,5 +224,52 @@ public class ComunidadService {
         miembroComunidadRepository.eliminar(mc);   
         
     }
+
+    @Transactional
+    public void aceptarInvitacion(Long invitacionId, Long userId) {
+        InvitacionComunidad inv = invitacionRepository.buscarPorId(invitacionId);
+
+        if(inv == null) {
+            throw new NotFoundException("Invitacion no existe");
+        }
+
+        if(!inv.getUsuarioInvitado().getId().equals(userId)){
+            throw new ForbiddenException("No autorizado");
+        }
+
+        if(inv.getEstado() != EstadoInvitacion.PENDIENTE){
+            throw new ClientErrorException("La invitacion ya fue procesada", Response.Status.CONFLICT);
+        }
+
+        inv.setEstado(EstadoInvitacion.ACEPTADA);
+        invitacionRepository.actualizar(inv);
+
+        MiembroComunidad miembro = new MiembroComunidad();
+        miembro.setComunidad(inv.getComunidad());
+        miembro.setUsuario(inv.getUsuarioInvitado());
+        miembro.setRol(RolComunidad.MEMBER);
+        miembroComunidadRepository.guardar(miembro);
+    }
+
+    @Transactional
+    public void rechazarInvitacion(Long invitacionId, Long userId) {
+        InvitacionComunidad inv = invitacionRepository.buscarPorId(invitacionId);
+
+        if(inv == null) {
+            throw new NotFoundException("Invitacion no existe");
+        }
+
+        if(!inv.getUsuarioInvitado().getId().equals(userId)){
+            throw new ForbiddenException("No autorizado");
+        }
+
+        if(inv.getEstado() != EstadoInvitacion.PENDIENTE){
+            throw new ClientErrorException("La invitacion ya fue procesada", Response.Status.CONFLICT);
+        }
+
+        inv.setEstado(EstadoInvitacion.RECHAZADA);
+        
+        invitacionRepository.actualizar(inv);
+    }
     
 }

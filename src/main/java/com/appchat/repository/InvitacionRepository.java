@@ -31,4 +31,11 @@ public class InvitacionRepository {
         return count > 0;
     }
     
+    public InvitacionComunidad buscarPorId(Long id) {
+        return em.find(InvitacionComunidad.class, id);
+    }
+
+    public void actualizar(InvitacionComunidad inv) {
+        em.merge(inv);
+    }
 }

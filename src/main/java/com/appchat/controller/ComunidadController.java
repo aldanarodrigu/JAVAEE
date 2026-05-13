@@ -113,4 +113,20 @@ public class ComunidadController {
         return Response.noContent().build();
     }
     
+    @PUT
+    @Path("/invitaciones/{invitacionId}/aceptar")
+    public Response aceptar(@PathParam("invitacionId") Long invitacionId, @Context ContainerRequestContext requestContext) {
+        Long userId = (Long) requestContext.getProperty("userId");
+        comunidadService.aceptarInvitacion(invitacionId, userId);
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/invitaciones/{invitacionId}/rechazar")
+    public Response rechazar(@PathParam("invitacionId") Long invitacionId, @Context ContainerRequestContext requestContext) {
+        Long userId = (Long) requestContext.getProperty("userId");
+        comunidadService.rechazarInvitacion(invitacionId, userId);
+        return Response.ok().build();
+    }
+    
 }

@@ -36,4 +36,8 @@ public class MiembroComunidadRepository {
                 : em.merge(miembro));
     }
     
+    public void guardar(MiembroComunidad miembro) {
+        em.persist(miembro);
+    }
+    
 }
