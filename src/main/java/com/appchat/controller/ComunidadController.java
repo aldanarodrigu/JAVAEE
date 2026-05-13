@@ -86,10 +86,31 @@ public class ComunidadController {
     }
     
     @GET
-public Response listarComunidades() {
-    Long userId = (Long) requestContext.getProperty("userId");
-    List<ComunidadResumenDTO> comunidades = comunidadService.listarComunidadesDelUsuario(userId);
-    return Response.ok(comunidades).build();
-}
+    public Response listarComunidades() {
+        Long userId = (Long) requestContext.getProperty("userId");
+        List<ComunidadResumenDTO> comunidades = comunidadService.listarComunidadesDelUsuario(userId);
+        return Response.ok(comunidades).build();
+    }
+    
+    @DELETE
+    @Path("/{id}/salir")
+    public Response salirDeComunidad(@PathParam("id") Long comunidadId){
+        Long userId = (Long) requestContext.getProperty("userId");
+        
+        comunidadService.salirComunidad(comunidadId, userId);   
+        
+        return Response.noContent().build();
+    }
+    
+    @DELETE
+    @Path("/{id}/mimebros/{idm}")
+    public Response eliminarMiembro(@PathParam("id") Long comunidadId, @PathParam("idm") Long userId){
+        
+        Long adminId = (Long) requestContext.getProperty("userId");
+        
+        comunidadService.eliminarMiembro(comunidadId, userId, adminId);   
+        
+        return Response.noContent().build();
+    }
     
 }

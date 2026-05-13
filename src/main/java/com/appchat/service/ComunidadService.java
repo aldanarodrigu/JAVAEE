@@ -9,13 +9,16 @@ import com.appchat.repository.ComunidadRepository;
 import com.appchat.dto.ComunidadResumenDTO;
 import com.appchat.dto.ComunidadDetalleDTO;
 import com.appchat.model.InvitacionComunidad;
+import com.appchat.model.MiembroComunidad;
 import com.appchat.model.enums.EstadoInvitacion;
 import com.appchat.repository.InvitacionRepository;
+import com.appchat.repository.MiembroComunidadRepository;
 
 import jakarta.inject.Inject;
 
 import jakarta.transaction.Transactional;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
@@ -33,7 +36,10 @@ public class ComunidadService {
     private UsuarioService usuarioService;
     
     @Inject 
-    private InvitacionRepository inivtacionRepository;
+    private InvitacionRepository invitacionRepository;
+    
+    @Inject
+    private MiembroComunidadRepository miembroComunidadRepository;
 
     Comunidad buscarPorId(Long comunidadId) {
         return comunidadRepository.buscarPorId(comunidadId);
@@ -45,46 +51,46 @@ public class ComunidadService {
 
     @Transactional
     public ComunidadDetalleDTO obtenerDetalleComunidad(Long id) {
-    Comunidad c = comunidadRepository.buscarPorId(id);
-    if (c == null) throw new NotFoundException("Comunidad no encontrada");
+        Comunidad c = comunidadRepository.buscarPorId(id);
+        if (c == null) throw new NotFoundException("Comunidad no encontrada");
 
-    Long ownerUserId = c.getMiembros().stream()
-        .filter(m -> m.getRol() == RolComunidad.OWNER)
-        .map(m -> m.getUsuario().getId())
-        .findFirst().orElse(null);
+        Long ownerUserId = c.getMiembros().stream()
+            .filter(m -> m.getRol() == RolComunidad.OWNER)
+            .map(m -> m.getUsuario().getId())
+            .findFirst().orElse(null);
 
-    List<UsuarioResponseDTO> miembros = c.getMiembros().stream()
-        .map(m -> usuarioService.mapearUsuario(m.getUsuario()))
-        .collect(java.util.stream.Collectors.toList());
+        List<UsuarioResponseDTO> miembros = c.getMiembros().stream()
+            .map(m -> usuarioService.mapearUsuario(m.getUsuario()))
+            .collect(java.util.stream.Collectors.toList());
 
-    ComunidadDetalleDTO dto = new ComunidadDetalleDTO();
-    dto.setId(c.getId());
-    dto.setNombre(c.getNombre());
-    dto.setDescripcion(c.getDescripcion());
-    dto.setFotoUrl(c.getFotoUrl());
-    dto.setOwnerUserId(ownerUserId);
-    dto.setMiembros(miembros);
-    return dto;
-}
+        ComunidadDetalleDTO dto = new ComunidadDetalleDTO();
+        dto.setId(c.getId());
+        dto.setNombre(c.getNombre());
+        dto.setDescripcion(c.getDescripcion());
+        dto.setFotoUrl(c.getFotoUrl());
+        dto.setOwnerUserId(ownerUserId);
+        dto.setMiembros(miembros);
+        return dto;
+    }
 
     @Transactional
-public Comunidad editarComunidad(Long id, ComunidadDTO dto, Long userId) {
-    Comunidad c = comunidadRepository.buscarPorId(id);
-    if (c == null) throw new NotFoundException("Comunidad no encontrada");
-    if (!c.esAdmin(userId)) throw new ForbiddenException("No autorizado");
-    c.setNombre(dto.getNombre());
-    c.setDescripcion(dto.getDescripcion());
-    if (dto.getFotoUrl() != null) c.setFotoUrl(dto.getFotoUrl());
-    return comunidadRepository.actualizar(c);
-}
+    public Comunidad editarComunidad(Long id, ComunidadDTO dto, Long userId) {
+        Comunidad c = comunidadRepository.buscarPorId(id);
+        if (c == null) throw new NotFoundException("Comunidad no encontrada");
+        if (!c.esAdmin(userId)) throw new ForbiddenException("No autorizado");
+        c.setNombre(dto.getNombre());
+        c.setDescripcion(dto.getDescripcion());
+        if (dto.getFotoUrl() != null) c.setFotoUrl(dto.getFotoUrl());
+        return comunidadRepository.actualizar(c);
+    }
 
-@Transactional
-public void eliminarComunidad(Long id, Long userId) {
-    Comunidad c = comunidadRepository.buscarPorId(id);
-    if (c == null) throw new NotFoundException("Comunidad no encontrada");
-    if (!c.esAdmin(userId)) throw new ForbiddenException("No autorizado");
-    comunidadRepository.eliminar(id);
-}
+    @Transactional
+    public void eliminarComunidad(Long id, Long userId) {
+        Comunidad c = comunidadRepository.buscarPorId(id);
+        if (c == null) throw new NotFoundException("Comunidad no encontrada");
+        if (!c.esAdmin(userId)) throw new ForbiddenException("No autorizado");
+        comunidadRepository.eliminar(id);
+    }
 
     @Transactional
     public Comunidad crearComunidad(ComunidadDTO comunidadDto, Long userId) {
@@ -126,7 +132,7 @@ public void eliminarComunidad(Long id, Long userId) {
             throw new ClientErrorException("Ya es miembro", Response.Status.CONFLICT);
         }
 
-        boolean yaInvitado = inivtacionRepository.existeInvitacionPendiente(comunidadId, u.getId());
+        boolean yaInvitado = invitacionRepository.existeInvitacionPendiente(comunidadId, u.getId());
 
         if(yaInvitado){
             throw new ClientErrorException("Ya tiene una invitacion pendiente", Response.Status.CONFLICT);
@@ -140,7 +146,7 @@ public void eliminarComunidad(Long id, Long userId) {
         invitacion.setUsuarioInvitado(u);  
         invitacion.setEstado(EstadoInvitacion.PENDIENTE);
 
-        inivtacionRepository.guardar(invitacion);
+        invitacionRepository.guardar(invitacion);
     }
     
     public List<UsuarioResponseDTO> listarMiembros(Long comunidadId){
@@ -170,6 +176,53 @@ public void eliminarComunidad(Long id, Long userId) {
         }
         
         return resultado;
+    }
+
+    @Transactional
+    public void salirComunidad(Long comunidadId, Long userId) {
+        Comunidad c = comunidadRepository.buscarPorId(comunidadId);
+        
+        if(c == null){
+            throw new NotFoundException("Comunidad no encontrada");
+        }
+        
+        MiembroComunidad mc = miembroComunidadRepository.buscarPorUsuarioYComunidad(userId, comunidadId);
+        
+        if(mc == null){
+            throw new BadRequestException("El usuario no pertenece a la comunidad");
+        }
+        
+        if(c.esAdmin(userId)){
+            throw new BadRequestException("El propietario no puede salir de la comunidad");
+        }
+        
+        miembroComunidadRepository.eliminar(mc);
+    }
+
+    @Transactional
+    public void eliminarMiembro(Long comunidadId, Long userId, Long adminId) {
+        Comunidad c = comunidadRepository.buscarPorId(comunidadId);
+        
+        if(c == null){
+            throw new NotFoundException("Comunidad no encontrada");
+        }
+        
+        if (!c.esAdmin(adminId)) {
+            throw new ForbiddenException("No tienes permisos para eliminar miembros");
+        }
+        
+        MiembroComunidad mc = miembroComunidadRepository.buscarPorUsuarioYComunidad(userId, comunidadId);
+        
+        if(mc == null){
+            throw new BadRequestException("El usuario no pertenece a la comunidad");
+        }
+        
+        if (mc.getRol() == RolComunidad.OWNER) {
+            throw new BadRequestException("No puedes eliminar a un propietario");
+        }
+
+        miembroComunidadRepository.eliminar(mc);   
+        
     }
     
 }
