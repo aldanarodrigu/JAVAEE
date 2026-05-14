@@ -48,6 +48,21 @@ public class ChatRepository {
         .setParameter("usuarioId", usuarioId)
         .getResultList();
     }
+    
+    public List<Chat> listarChatsDeUsuarioYComunidad(Long usuarioId, Long comunidadId) {
+
+        return em.createQuery("""
+            SELECT c
+            FROM Chat c
+            JOIN c.participantes p
+            WHERE p.usuario.id = :usuarioId
+            AND c.comunidad.id = :comunidadId
+            ORDER BY c.fechaCreacion DESC
+        """, Chat.class)
+        .setParameter("usuarioId", usuarioId)
+        .setParameter("comunidadId", comunidadId)
+        .getResultList();
+    }
 
     public void guardarChat(Chat chat) {
         em.persist(chat);

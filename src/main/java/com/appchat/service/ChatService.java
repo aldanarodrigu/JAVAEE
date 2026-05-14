@@ -131,10 +131,11 @@ public class ChatService {
     }
     
     @Transactional
-    public List<ChatResumenDTO> listarChatsDelUsuario(Long usuarioId) {
+    public List<ChatResumenDTO> listarChatsDeComunidad(Long usuarioId, Long comunidadId) {
         verificarUsuarioExiste(usuarioId);
 
-        List<Chat> chats = chatRepository.listarChatsDeUsuario(usuarioId);
+        List<Chat> chats = chatRepository.listarChatsDeUsuarioYComunidad(usuarioId, comunidadId);
+        
         List<ChatResumenDTO> respuestas = new ArrayList<>();
 
         for (Chat chat : chats) {
