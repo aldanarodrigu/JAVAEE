@@ -81,6 +81,7 @@ public class UsuarioService{
         dto.setApellido(usuario.getApellido());
         dto.setEmail(usuario.getEmail());
         dto.setEstado(usuario.getEstado());
+        dto.setUsername(usuario.getUsername());
         return dto;
     }
 
